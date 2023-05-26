@@ -45,7 +45,21 @@ urlpatterns = [
     re_path(r'^birthday/(?P<year>\d{4})/(?P<month>\d{1,2})/(?P<day>\d{1,2})$', views.birthday_view),
 
     # exercise2:  http://127.0.0.1:8000/birthday/1~2位数字/1~2位数字/4位数字
-    re_path(r'^birthday/(?P<day>\d{1,2})/(?P<month>\d{1,2})/(?P<year>\d{4})$', views.birthday_view)
+    re_path(r'^birthday/(?P<day>\d{1,2})/(?P<month>\d{1,2})/(?P<year>\d{4})$', views.birthday_view),
+
+
+
+    ######## 开始 request的探索 ########
+    path("test_request", views.test_request),
+
+    path("test_get_post", views.test_get_post),
+
+    # 测试 从templates 文件夹下面 load
+    path("test_templates_html", views.test_templates_html),
+    # 方式2
+    path("test_templates_html2", views.test_templates_html2),
+
+
 
 
 ]
