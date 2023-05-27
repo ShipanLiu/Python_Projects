@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>02_test_if_for</title>
+</head>
+<body>
+
+<div>
+    {% if x > 10 %}
+    weather is good
+    {% else %}
+    weather is not good
+    {% endif %}
+</div>
+
+
+<div>
+    {% for item in lst %}
+        <!--展示 first loop-->
+        {% if forloop.first %} ^^^^^ {% endif %}
+        <!--展示 index-->
+        <p>{{ forloop.counter0 }} : {{ item }}</p>
+        <!--展示 last loop-->
+        {% if forloop.last %} $$$$$ {% endif %}
+    {% empty %}
+        "the list is empty"
+    {% endfor %}
+</div>
+
+
+</body>
+</html>

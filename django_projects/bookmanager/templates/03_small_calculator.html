@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>small_calculator</title>
+</head>
+<body>
+<div>
+    <!--action means to which path should I send-->
+    <form action="/smallCalc" method="post">
+        <!--value 是 默认值 -->
+
+        <input type="number" name="num1" value="{{ num1 }}">
+        <select name="operation">
+            <!--保持用户的 选项-->
+            <option value="+" {% if operation == "+" %} selected {% endif %}>+</option>
+            <option value="-" {% if operation == "-" %} selected {% endif %}>-</option>
+            <option value="*" {% if operation == "*" %} selected {% endif %}>*</option>
+            <option value="/" {% if operation == "/" %} selected {% endif %}>/</option>
+        </select>
+        <input type="number" name="num2" value="{{ num2 }}"> = <span>{{ result }}</span>
+        <div>
+            <input type="submit" value="calculate"/>
+        </div>
+    </form>
+</div>
+
+</body>
+</html>

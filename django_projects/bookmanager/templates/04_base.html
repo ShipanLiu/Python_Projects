@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!--因为 title 会更改在 不同pages 里面， 所以可以 定义成一个快-->
+    {% block myTitle%}
+    <title>Homepage</title>
+    {% endblock %}
+</head>
+<body>
+<a href="{% url 'child_music' '100' %}">music</a>
+<a href="{% url 'child_sport' %}">sport</a>
+<a href="{% url 'test_reverse' %}">test_reverse</a>
+
+
+<div>
+    <!-- 中间的 地方肯定能改-->
+    {% block mainArea %}
+    this is the main stuff here
+    {% endblock%}
+</div>
+
+
+<div>
+    <h3>this is footer</h3>
+</div>
+
+
+
+
+</body>
+</html>

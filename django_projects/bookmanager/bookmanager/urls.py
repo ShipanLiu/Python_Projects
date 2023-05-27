@@ -59,6 +59,30 @@ urlpatterns = [
     # 方式2
     path("test_templates_html2", views.test_templates_html2),
 
+    # 测试 在 html 里 使用 if和 for
+    path("test_if_for", views.test_if_for),
+
+    # smallCalc项目
+    path("smallCalc", views.test_small_Calc),
+
+
+    # 父模板
+    # 为了不在html里面写 path， 我们给 这里的 path起一个别名 name="father_base" ， 不要忘记name
+    # 这样我不管你path 改成什么名字， 比如 base1, base2, 啥的 我name 都不变， 起到一个动态的效果
+    path("base", views.base_view, name="father_base"),
+
+    # music 子模版
+    # http://localhost:8000/music_index/100
+    path("music_index/<int:age>", views.music_view, name="child_music"),
+
+    # sport 子模版
+    path("sport_index", views.sport_view, name="child_sport"),
+
+    # test_reverse_path_from_name
+    path("test_reverse_path", views.test_reverse_path_from_name, name="test_reverse")
+
+
+
 
 
 
