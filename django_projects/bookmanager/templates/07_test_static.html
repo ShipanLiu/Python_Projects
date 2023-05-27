@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<img src="/static/image/family.jpg" alt="img does not exist" width="200px" height="150px">
+
+<!--用 static 之前 先load 一下, 这是 dj 给的-->
+<!--推荐使用这个， 更动态： 假如之后 /static  改成 /statics 时候， 只要在 settings.py 里 改成： STATIC_URL = '/statics/' -->
+{% load static %}
+<img src="{% static 'image/family.jpg'%}" alt="img does not exist" width="200px" height="150px">
+</body>
+</html>
+

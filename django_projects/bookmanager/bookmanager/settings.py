@@ -48,6 +48,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    #自己  python manage.py startapp music  我创建了一个 music 的 App， 在这里注册一下
+    'music'
 ]
 
 MIDDLEWARE = [
@@ -130,5 +132,12 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
+# 这里管 静态文件
 
 STATIC_URL = '/static/'
+
+#  a new tuple for finding the FILES
+#  一个元素的元组 必须是有 ，的
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, "static"),
+)
