@@ -1,4 +1,8 @@
 ###not exposure my mysql connection data in Github###
 
-/django_projects/bookmanager/bookmanager/settings.py
+django_projects/bookmanager/bookmanager/settings.py
+
+django_projects/bookmanager/.idea/
+
+
 
