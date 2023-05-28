@@ -18,6 +18,9 @@ class Book(models.Model):
     class Meta:
         db_table = 'book'  # table name will be no more "bookstore_book" , but "book"
 
+    # 相当于 toString
+    def __str__(self):
+        return "%s_%s_%s_%s_%s_"%(self.title, self.pub, self.price, self.info, self.market_price)
 
 
 class Author(models.Model):

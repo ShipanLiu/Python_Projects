@@ -94,6 +94,9 @@ urlpatterns = [
 
     # 创建了news Application， 然后 这里负责所有的 /news path
 
-    path("news/", include("news.urls"))
+    path("news/", include("news.urls")),
+
+    # for bookstore
+    path("bookstore/", include("bookstore.urls"))
 
 ]

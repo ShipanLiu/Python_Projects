@@ -1,0 +1,48 @@
+<!--
+
+从 阿里云 mysql 数据库上面 把 数据查出来， 然后放在 列表里
+
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>All Books</title>
+    <style>
+        .book_table, tr, td {
+             border: 1px solid;
+             /*border-collapse: collapse;*/
+        }
+
+    </style>
+</head>
+<body>
+
+<!--用 table 把 所有的 books -->
+<table class="book_table">
+    <tr>
+        <th>id</th>
+        <th>title</th>
+        <th>info</th>
+        <th>price</th>
+        <th>market_price</th>
+        <th>publication</th>
+    </tr>
+    {% for book in books %}
+        <tr>
+            <td>{{ book.id }}</td>
+            <td>{{ book.title }}</td>
+            <td>{{ book.info }}</td>
+            <td>{{ book.price }}</td>
+            <td>{{ book.market_price }}</td>
+            <td>{{ book.pub }}</td>
+            <td>
+                <a href="">update</a>
+                <a href="">delete</a>
+            </td>
+        </tr>
+    {% endfor %}
+</table>
+</body>
+</html>
