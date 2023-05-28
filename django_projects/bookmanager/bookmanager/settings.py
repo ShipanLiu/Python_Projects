@@ -36,7 +36,7 @@ DEBUG = True
 
 
 # 允许谁去请求
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["47.88.59.226"]
 
 
 # Application definition
@@ -49,7 +49,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     #自己  python manage.py startapp music  我创建了一个 music 的 App， 在这里注册一下
-    'music'
+    'music',
+    'sport',
+    'news'
 ]
 
 MIDDLEWARE = [
@@ -71,6 +73,7 @@ TEMPLATES = [
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         # E:\Z_Frond_Back_workplace\07_Python\django_projects\bookmanager\templates
         'DIRS': [os.path.join(BASE_DIR, "templates")],
+        # 表示 dj 要不要取 App 下的 templates 来找文件
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -90,9 +93,15 @@ WSGI_APPLICATION = 'bookmanager.wsgi.application'
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 # 数据库
 DATABASES = {
+    # 表示默认数据库
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.mysql',
+        # 目标 数据库的 名字
+        'NAME': 'dj_mysite1',
+        'USER': 'root',
+        'PASSWORD': 'Woxhhxd990812?',
+        'HOST': '47.88.59.226',
+        'PORT': '3306'
     }
 }
 
