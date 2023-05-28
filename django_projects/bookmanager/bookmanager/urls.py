@@ -86,6 +86,14 @@ urlpatterns = [
     ###############仙子啊开始 搞 主路由， 子路由################
     # http://localhost:8000/music
     # 注意是music/ 的 /,表示 我后面还有东西，
-    path("music/", include("music.urls"))
+    path("music/", include("music.urls")),
+
+    # 创建了sport Application， 然后 这里负责所有的 /sport path
+    path("sport/", include("sport.urls")),
+
+
+    # 创建了news Application， 然后 这里负责所有的 /news path
+
+    path("news/", include("news.urls"))
 
 ]

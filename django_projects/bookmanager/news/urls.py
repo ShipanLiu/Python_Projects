@@ -1,4 +1,3 @@
-#这个文件 需要自己创建
 from django.urls import path
 from . import views
 
