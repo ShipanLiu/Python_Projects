@@ -38,8 +38,10 @@
             <td>{{ book.market_price }}</td>
             <td>{{ book.pub }}</td>
             <td>
-                <a href="">update</a>
-                <a href="">delete</a>
+                <!--那么这边的 链接如何写呢，发给 view 函数， view 函数的 GET 来处理-->
+                <!-- 这里面写 绝对路径  , 下面是 两种 传递 book_id 的方法-->
+                <a href="/bookstore/update_book/{{ book.id }}">update</a>
+                <a href="/bookstore/delete_book?book_id={{ book.id }}">delete</a>
             </td>
         </tr>
     {% endfor %}

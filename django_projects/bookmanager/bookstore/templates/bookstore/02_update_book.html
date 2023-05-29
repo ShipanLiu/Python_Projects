@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Update Book</title>
+</head>
+<body>
+    <!-- action 表示， 我要把 form 里面的 data 传到那里去 -->
+    <!-- 把 id 写进 url， 注意 在urls.py 里 用  <int:id> 来接受处理-->
+    <form action="/bookstore/update_book/{{ book.id }}" method="post">
+        <p>
+            id: <input type="text" name= "id" value="{{ book.id }}" disabled="disabled">
+        </p>
+        <p>
+            title: <input type="text" name= "title" value="{{ book.title }}" disabled="disabled">
+        </p>
+        <p>
+            price: <input type="text" name= "price" value="{{ book.price }}">
+        </p>
+        <p>
+            market_price: <input type="text" name= "market_price" value="{{ book.market_price }}">
+        </p>
+        <p>
+            info: <input type="text" name= "info" value="{{ book.info }}">
+        </p>
+        <p>
+            pub: <input type="text" name= "pub" value="{{ book.pub }}" disabled="disabled">
+        </p>
+        <p>
+            <!-- 你只要一点，  views 函数的 POST 会 处理请求，-->
+            <input type="submit" value="submit">
+        </p>
+    </form>
+</body>
+</html>
