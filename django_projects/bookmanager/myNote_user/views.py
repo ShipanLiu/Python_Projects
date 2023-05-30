@@ -59,11 +59,11 @@ def handle_reg(request):
             return render(request, "myNote_user/01_registPage.html", locals())
 
 
-        #免登录一天 session
+        #免登 session
         request.session["username"] = username
         request.session["uid"] = user.id
 
-        return HttpResponse("register with success")
+        return HttpResponseRedirect("/index")
 
 
 #http://127.0.0.1:8000/myNote/user  /login
@@ -75,7 +75,7 @@ def handle_login(request):
         # if session or cookies yes, then 显示 “已经登陆”
         if request.session.get("username") and request.session.get("uid"):
             print("session ok")
-            return HttpResponse("here is index page")
+            return HttpResponseRedirect("/index")
 
         cookie_username = request.COOKIES.get("username")
         cookie_uid = request.COOKIES.get("uid")
@@ -86,7 +86,7 @@ def handle_login(request):
             # refresh session
             request.session["username"] = cookie_username
             request.session["uid"] = cookie_uid
-            return HttpResponse("here is index page")
+            return HttpResponseRedirect("/index")
         
         # 我现在就是没有登陆
         return render(request, "myNote_user/02_loginPage.html")
@@ -136,13 +136,26 @@ def handle_login(request):
         request.session["uid"] = userFound.id
 
         # remember 1 min ==> cookie
-        response = HttpResponse("here is the main page")
+        response = HttpResponseRedirect("/index")
 
         # if the checkbox is checked, then the POSt request contains "remember"
         if "remember" in request.POST:
-            response.set_cookie("username", username, 30*1)
-            response.set_cookie("uid", userFound.id, 30*1)
+            response.set_cookie("username", username, 60*10)
+            response.set_cookie("uid", userFound.id, 60*10)
         return response
 
-
+def handle_logout(request):
+    #check if cookies and sessions exist or not
+    #删除session值
+    if 'username' in request.session:
+        del request.session['username']
+    if 'uid' in request.session:
+        del request.session['uid']
+    #删除Cookies
+    resp = HttpResponseRedirect('/index')
+    if 'username' in request.COOKIES:
+        resp.delete_cookie('username')
+    if 'uid' in request.COOKIES:
+        resp.delete_cookie('uid')
+    return resp
 

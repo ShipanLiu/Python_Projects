@@ -6,5 +6,37 @@
 </head>
 <body>
     <!--在html 里， 可以直接用 request 这个变量-->
+    {% if request.session.username %}
+        <span>
+            Welcome: {{ request.session.username }}
+        </span>
+        <span>&nbsp | &nbsp</span>
+        <span>
+            <a href="">my notes</a>
+        </span>
+        <apan>
+            <a href="/myNote/user/logout">logout</a>
+        </apan>
+    {% elif request.COOKIES.username %}
+        <!--session 里面没有（session已经过期）， 假如cookie里面有 username-->
+        <p>
+            Welcome: {{ request.COOKIES.username }}
+        </p>
+        <p>
+            <a href="">my notes</a>
+        </p>
+        <p>
+            <a href="/myNote/user/logout">logout</a>
+        </p>
+    
+    {% else %}
+        <p>
+            <a href="/myNote/user/login">login</a>
+        </p>
+        <p>
+            <a href="/myNote/user/reg">register</a>
+        </p>
+
+    {% endif %}
 </body>
 </html>
