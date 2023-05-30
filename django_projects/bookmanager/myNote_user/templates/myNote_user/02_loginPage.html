@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Regist</title>
+    <title>Login</title>
 </head>
 
 <style>
@@ -17,48 +17,47 @@
 
 <script>
     function empty() {
-        document.getElementById("form_reg").reset()
+        document.getElementById("form_login").reset()
     }
 
 </script>
 <body>
-    <form id="form_reg" action="/myNote/user/reg" method="post">
+    <form id="form_login" action="/myNote/user/login" method="post">
         <table>
             <tr>
                 <td>
                     username
                 </td>
                 <td>
-                    <input class="input_reg" type="text" name="username" value="{{ username }}">
+                    <input type="text" name="username" value="{{ username }}">
                 </td>
             </tr>
 
             <tr>
                 <td>
-                    pwd
+                    password
                 </td>
                 <td>
-                    <input class="input_reg" type="text" name="password1" value="{{ pwd1 }}">
-                </td>
-            </tr>
-
-            <tr>
-                <td>
-                    pwd repeat
-                </td>
-                <td>
-                    <input class="input_reg" type="text" name="password2" value="{{ pwd2 }}">
+                    <input type="text" name="password" value="{{ password }}">
                 </td>
             </tr>
 
             <tr>
                 <td>
-                    submit
+                    remember pwd
                 </td>
                 <td>
-                    <input type="submit" value="register">
+                    <input type="checkbox" name="remember" value="{{ remember_pwd_checked }}" checked>
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    login
+                </td>
+                <td>
+                    <input type="submit" value="login">
                     <button type="reset" onclick="empty()">reset</button>
-
                 </td>
             </tr>
         </table>

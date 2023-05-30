@@ -6,5 +6,7 @@ from . import views
 urlpatterns = [
 
     # for registpage
-    path("reg", views.handle_reg, name="reg")
+    #myNote/user/reg
+    path("reg", views.handle_reg, name="reg"),
+    path("login", views.handle_login, name="login")
 ]
