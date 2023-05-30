@@ -97,6 +97,11 @@ urlpatterns = [
     path("news/", include("news.urls")),
 
     # for bookstore
-    path("bookstore/", include("bookstore.urls"))
+    path("bookstore/", include("bookstore.urls")),
+
+
+    #云笔记项目
+    path("user/", include("myNote_user.urls")),
+    path("notes/", include("myNote_note.urls"))
 
 ]
