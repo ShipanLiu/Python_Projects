@@ -6,14 +6,13 @@ def post_list_handle(request):
     posts = Post.objects.all()
     return render(request, 'blog/post_list.html', locals()) # {{ posts }} get delivered into html file
 
-def create_post(request):
+def create_post_handle(request):
     if request.method == 'POST':
-        title = request.POST['title']
-        content = request.POST['content']
-        user = request.user
+        title = request.POST.get("title")
+        content = request.POST.get("content")
+        user = request.session.get("uid")
         post = Post.objects.create(title=title, content=content, user=user)
-        return redirect('post_list')
-    return render(request, 'posts/create_post.html')
+    return render(request, 'blog/post_list.html')
 
 def create_comment(request, post_id):
     post = Post.objects.get(pk=post_id)

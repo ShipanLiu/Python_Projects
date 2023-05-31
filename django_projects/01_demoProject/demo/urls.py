@@ -23,6 +23,9 @@ urlpatterns = [
     path("index", include("index.urls")),
 
     #post list path
-    path("demo/", include("blog.urls")),
+    path("demo/blog/", include("blog.urls")),
+
+    # user register / login
+    path("demo/user/", include("user.urls")),
 
 ]

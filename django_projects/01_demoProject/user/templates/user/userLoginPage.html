@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+</head>
+
+<style>
+    table, tr, th, td {
+        border: 1px solid pink;
+         border-collapse: collapse;
+    }
+    table tr td {
+        text-align: center;
+    }
+</style>
+
+<script>
+    function empty() {
+        document.getElementById("form_login").reset()
+    }
+
+</script>
+<body>
+    <form id="form_login" action="/demo/user/login" method="post">
+        <table>
+            <tr>
+                <td>
+                    username
+                </td>
+                <td>
+                    <input type="text" name="username" value="{{ username }}">
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    password
+                </td>
+                <td>
+                    <input type="text" name="password" value="{{ password }}">
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    remember pwd
+                </td>
+                <td>
+                    <input type="checkbox" name="remember" value="{{ remember_pwd_checked }}" checked>
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    login
+                </td>
+                <td>
+                    <input type="submit" value="login">
+                    <button type="reset" onclick="empty()">reset</button>
+                </td>
+            </tr>
+        </table>
+    </form>
+    <div>
+        <p style="color: red">
+            {{ warn }}
+        </p>
+    </div>
+</body>
+</html>
