@@ -7,14 +7,14 @@
 <body>
     <h1>Post List</h1>
     <ul>
-        {% for post in posts %}
+        {% for post in post_list %}
             <li>
                 <h2>{{ post.title }}</h2>
                 <p>{{ post.content }}</p>
-                <p>Posted by: {{ post.user.username }}</p>
+                <p>Posted by uid: {{ post.user }}</p>
                 <p>Created at: {{ post.created_time }}</p>
-                <form method="post" action="/demo/log/create_comment/{{ post.id }}">
-                    <textarea name="content" placeholder="Add a comment"></textarea>
+                <form method="post" action="/demo/blog/create_comment/{{ post.id }}">
+                    <textarea name="comment_content" placeholder="Add a comment">this is defalut comment for post {{ post.id }}</textarea>
                     <button type="submit">Submit Comment</button>
                 </form>
                 <ul>
@@ -22,10 +22,10 @@
                     {% for comment in post.comments.all %}
                         <li>
                             <p>{{ comment.content }}</p>
-                            <p>Commented by: {{ comment.user.username }}</p>
+                            <p>Commented by uid: {{ comment.user }}</p>
                             <p>Created at: {{ comment.created_time }}</p>
                             <form method="post" action="/demo/create_comment_reply/{{ comment.id }}">
-                                <textarea name="content" placeholder="Reply to this comment"></textarea>
+                                <textarea name="content" placeholder="Reply to this comment">this is defalut reply for comment {{ comment.id }}</textarea>
                                 <button type="submit">Submit Reply</button>
                             </form>
                             <ul>

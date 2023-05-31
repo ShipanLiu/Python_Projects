@@ -13,7 +13,7 @@ class Post(models.Model):
     content = models.TextField("post content")
     created_time = models.DateTimeField("create time", auto_now_add=True)
     updated_time = models.DateTimeField("update time", auto_now=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.CharField("related uid", max_length=10)
     class Meta:
         db_table = 'demo_post'
 
@@ -25,7 +25,7 @@ class Comment(models.Model):
     content = models.TextField("comment content")
     created_time = models.DateTimeField("create time", auto_now_add=True)
     updated_time = models.DateTimeField("update time", auto_now=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.CharField("related uid", max_length=10)
     parent_comment = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='replies')
 
     class Meta:

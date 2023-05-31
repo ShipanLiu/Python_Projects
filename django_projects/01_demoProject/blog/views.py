@@ -1,10 +1,13 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
 from .models import Post, Comment
+from django.http import HttpResponse, HttpResponseRedirect
 
 def post_list_handle(request):
     posts = Post.objects.all()
-    return render(request, 'blog/post_list.html', locals()) # {{ posts }} get delivered into html file
+    dict = {
+        "post_list": posts
+    }
+    return render(request, 'blog/post_list.html', dict) # {{ posts }} get delivered into html file
 
 def create_post_handle(request):
     if request.method == 'POST':
@@ -12,16 +15,23 @@ def create_post_handle(request):
         content = request.POST.get("content")
         user = request.session.get("uid")
         post = Post.objects.create(title=title, content=content, user=user)
-    return render(request, 'blog/post_list.html')
+        return HttpResponseRedirect("/demo/blog/posts")
 
-def create_comment(request, post_id):
-    post = Post.objects.get(pk=post_id)
+def create_comment_handle(request, post_id):
+    warn = ""
+    try:
+        print("post_id: \n", post_id);
+        post = Post.objects.get(id = post_id)
+        print(post);
+    except Exception as e:
+        print("error by getting post: %s"%(e))
+        warn = "post dose not exist"
+        return HttpResponseRedirect("/demo/blog/posts")
     if request.method == 'POST':
-        content = request.POST['content']
-        user = request.user
+        content = request.POST['comment_content']
+        user = request.session.get("uid")
         Comment.objects.create(post=post, content=content, user=user)
-        return redirect('post_list')
-    return redirect('post_list')
+    return HttpResponseRedirect("/demo/blog/posts")
 
 def create_comment_reply(request, post_id, comment_id):
     post = Post.objects.get(pk=post_id)
