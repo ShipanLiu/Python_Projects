@@ -22,7 +22,8 @@ def create_post_handle(request):
 def create_comment_handle(request, post_id):
     warn = ""
     try:
-        post = Post.objects.get(id = post_id)
+        post = Post.objects.get(id=post_id)
+        print(post_id)
     except Exception as e:
         print("error by getting post: %s"%(e))
         warn = "post dose not exist"
