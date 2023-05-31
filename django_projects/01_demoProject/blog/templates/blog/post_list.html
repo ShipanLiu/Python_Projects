@@ -40,6 +40,7 @@
             color: blue;
             font-size: 25px;
         }
+
         .my_reply_content {
             color: black;
             font-size: 15px;
@@ -47,79 +48,90 @@
     </style>
 </head>
 <body>
-<!-- show current login -->
-<div>
-    <span>current user:&nbsp</span>
-    <span>{{ current_login }}</span>
-</div>
-<!-- create post -->
-<div>
-    <h1>Create Post</h1>
-    <form method="post" action="/demo/blog/create_post">
-        <input type="text" name="title" placeholder="Title"><br>
-        <textarea name="content" placeholder="Content"></textarea><br>
-        <button type="submit">Submit</button>
-    </form>
-</div>
-<!-- post list  -->
-<h1>Post List</h1>
-<ul>
-    {% for post in post_list %}
-        <li>
-            <h2 class="post_title">{{ post.title }}, id: {{ post.id }}</h2>
-            <span class="my_post_content">{{ post.content }}</span>
-            <span>----[{{ post.uid }},{{ post.uname }}], Created at: {{ post.created_time }}</span>
-            <button onclick="openCommnetModal({{ post.id }})">comment</button>
-            <div id="commentModal_{{ post.id }}" class="modal">
-                <div class="modal-content">
-                    <span onclick="closeCommentModal({{ post.id }})" style="float: right; cursor: pointer;">close</span>
-                    <h2>input your comment for post_id: {{ post.id }}</h2>
-                    <form method="post" action="/demo/blog/create_comment/{{ post.id }}">
-                        <textarea name="comment_content" placeholder="Add a comment"></textarea>
-                        <button type="submit" onclick="closeCommentModal({{ post.id }})">Submit Comment</button>
-                    </form>
+
+{% if not request.session.username %}
+    <p>not login</p>
+    <apan>
+        <a href="/index">back to homepage</a>
+    </apan>
+{% else %}
+    <!-- show curret login -->
+    <div>
+        <span>current user:&nbsp</span>
+        <span>{{ current_login }}</span>
+    </div>
+    <!-- create post -->
+    <div>
+        <h1>Create Post</h1>
+        <form method="post" action="/demo/blog/create_post">
+            <input type="text" name="title" placeholder="Title"><br>
+            <textarea name="content" placeholder="Content"></textarea><br>
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+    <!-- post list  -->
+    <h1>Post List</h1>
+    <ul>
+        {% for post in post_list %}
+            <li>
+                <h2 class="post_title">{{ post.title }}, id: {{ post.id }}</h2>
+                <span class="my_post_content">{{ post.content }}</span>
+                <span>----[{{ post.uid }},{{ post.uname }}], Created at: {{ post.created_time }}</span>
+                <button onclick="openCommnetModal({{ post.id }})">comment</button>
+                <div id="commentModal_{{ post.id }}" class="modal">
+                    <div class="modal-content">
+                        <span onclick="closeCommentModal({{ post.id }})"
+                              style="float: right; cursor: pointer;">close</span>
+                        <h2>input your comment for post_id: {{ post.id }}</h2>
+                        <form method="post" action="/demo/blog/create_comment/{{ post.id }}">
+                            <textarea name="comment_content" placeholder="Add a comment"></textarea>
+                            <button type="submit" onclick="closeCommentModal({{ post.id }})">Submit Comment</button>
+                        </form>
+                    </div>
                 </div>
-            </div>
 
-            <ul>
-                <!-- post.comments , this is defined in Comment in "related_name='comments'"   -->
-                {% for comment in post.comments.all %}
-                    <!-- if the comment is a comment, then comment.parent_comment=NULL -->
-                    <!-- if the comment is a reply, then comment.parent_comment = comment.id-->
-                    {% if not comment.parent_comment %}
-                        <li>
-                            <span class="my_comment_content">{{ comment.content }}</span>&nbsp
-                            <span>----[{{ comment.uid }},{{ comment.uname }}]</span>
-                            <button onclick="openReplyModal({{ comment.id }})">reply</button>
-                            <div id="replyModal_{{ comment.id }}" class="modal">
-                                <div class="modal-content">
-                                    <span onclick="closeReplyModal({{ comment.id }})" style="float: right; cursor: pointer;">close</span>
-                                    <h2>input your reply to comment_id:{{ comment.id }}</h2>
-                                    <form method="post" action="/demo/blog/create_reply/{{ post.id }}/{{ comment.id }}">
-                                        <textarea name="content" placeholder="Reply to this comment"></textarea>
-                                        <button type="submit" onclick="closeReplyModal({{ comment.id }})">Submit Reply</button>
-                                    </form>
+                <ul>
+                    <!-- post.comments , this is defined in Comment in "related_name='comments'"   -->
+                    {% for comment in post.comments.all %}
+                        <!-- if the comment is a comment, then comment.parent_comment=NULL -->
+                        <!-- if the comment is a reply, then comment.parent_comment = comment.id-->
+                        {% if not comment.parent_comment %}
+                            <li>
+                                <span class="my_comment_content">{{ comment.content }}</span>&nbsp
+                                <span>----[{{ comment.uid }},{{ comment.uname }}]</span>
+                                <button onclick="openReplyModal({{ comment.id }})">reply</button>
+                                <div id="replyModal_{{ comment.id }}" class="modal">
+                                    <div class="modal-content">
+                                        <span onclick="closeReplyModal({{ comment.id }})"
+                                              style="float: right; cursor: pointer;">close</span>
+                                        <h2>input your reply to comment_id:{{ comment.id }}</h2>
+                                        <form method="post"
+                                              action="/demo/blog/create_reply/{{ post.id }}/{{ comment.id }}">
+                                            <textarea name="content" placeholder="Reply to this comment"></textarea>
+                                            <button type="submit" onclick="closeReplyModal({{ comment.id }})">Submit
+                                                Reply
+                                            </button>
+                                        </form>
+                                    </div>
                                 </div>
-                            </div>
-                            <ul>
-                                {% for reply in comment.replies.all %}
-                                    <li>
-                                        <span>{{ reply.content }}----</span>
-                                        <span>[{{ reply.uid }},{{ reply.uname }}]</span>
-                                    </li>
-                                {% endfor %}
-                            </ul>
-                        </li>
-                    {% endif %}
+                                <ul>
+                                    {% for reply in comment.replies.all %}
+                                        <li>
+                                            <span>{{ reply.content }}----</span>
+                                            <span>[{{ reply.uid }},{{ reply.uname }}]</span>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            </li>
+                        {% endif %}
 
-                {% endfor %}
-            </ul>
-        </li>
-    {% endfor %}
-</ul>
-
+                    {% endfor %}
+                </ul>
+            </li>
+        {% endfor %}
+    </ul>
+{% endif %}
 <script>
-
 
 
     function openCommnetModal(post_id) {

@@ -6,7 +6,6 @@ import hashlib
 
 # Create your views here.
 
-# 处理 http://127.0.0.1:8000/user/reg GET请求， 1. 返回 注册页面,  2.处理 注册页面 发回来的 POST 请求
 def handle_reg(request):
     # GET, return the register page
     if request.method == "GET":
@@ -29,9 +28,8 @@ def handle_reg(request):
             warn = "pwd1 and pw2 should be identical"
             return render(request, "user/userRegistPage.html", locals())  # 让form显示old提交数据
         else:
-            # 哈希算法：
             m = hashlib.md5()  # create a md5 object
-            m.update(pwd1.encode())  # 导入到md5
+            m.update(pwd1.encode())
             pwd_md5 = m.hexdigest()
             pass
 
@@ -41,9 +39,6 @@ def handle_reg(request):
             warn = "the username is taken, please choose another name"
             return render(request, "user/userRegistPage.html", locals())
 
-        # insert pwd(without encrypting the pwd), 你不用插入 拿两个时间戳， 会自动插入
-        # 问题： 分布式服务器 同时接受 “Jier” 这一用户名的注册请求， 会出现错误， 因为 username 在DB 是 UNIQUE的
-        # 唯一索引 引发 并发问题： 需要使用try
         try:
             user = User.objects.create(username=username, password=pwd_md5)
         except Exception as e:
@@ -67,7 +62,6 @@ def handle_login(request):
             print("session ok")
             return HttpResponseRedirect("/index")
 
-        # 我现在就是没有登陆
         return render(request, "user/userLoginPage.html")
 
     # receive POST request ==> login
@@ -82,7 +76,6 @@ def handle_login(request):
             warn = "input area can'be be empty"
             return render(request, "user/userLoginPage.html", locals())
 
-        # 开始登陆
         # get user from DB
         try:
             userFound = User.objects.get(username=username)
@@ -98,15 +91,13 @@ def handle_login(request):
         # md5 the inputed password
         m = hashlib.md5()
         m.update(password.encode())
-        # compare with pwd from DB，输入密码错误
+        # compare with pwd from DB，
         if m.hexdigest() != userFound.password:
             warn = "user name exists but pwd is wrong"
             dict = locals()
             dict["password"] = ""
             return render(request, "user/userLoginPage.html", dict)
 
-        # session 每次都要存的，cookie 不一定每次都要存。
-        # 记录登陆状态 (key 的要和 register 时候的 session的时候 一致)
         request.session["username"] = username
         request.session["uid"] = userFound.id
 
@@ -117,7 +108,6 @@ def handle_login(request):
 
 def handle_logout(request):
     # check if cookies and sessions exist or not
-    # 删除session值
     if 'username' in request.session:
         del request.session['username']
     if 'uid' in request.session:
