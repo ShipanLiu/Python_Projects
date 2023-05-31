@@ -28,4 +28,8 @@ urlpatterns = [
     # user register / login
     path("demo/user/", include("user.urls")),
 
+
+    # ddmo the sum and fibonacci
+    path("work/", include("work.urls"))
+
 ]

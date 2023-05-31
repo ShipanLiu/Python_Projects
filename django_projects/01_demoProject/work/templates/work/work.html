@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>work</title>
+</head>
+<body>
+<div>
+    <!--action means to which path should I send-->
+    <!-- Attention of the path hier action="/work/"-->
+    <form action="/work/" method="post">
+        <input type="text" name="number">
+        <select name="operation">
+            <!--保持用户的 选项-->
+            <option value="sum" {% if operation == "sum" %} selected {% endif %}>sum</option>
+            <option value="fibo" {% if operation == "fibo" %} selected {% endif %}>fibonacci</option>
+        </select>
+        <input type="submit" value="calculate"/>
+    </form>
+    <br>
+    <br>
+    <div>
+        <span>input data</span>
+        {% if operation == "sum" %}
+            <span>calculate sum : &nbsp</span><span>[</span>
+            {% for item in result_list %}
+                <span>{{ item }}</span>
+                {% if not forloop.last %}
+                    <span>,</span>
+                {% endif %}
+            {% endfor %}
+            <span>]</span>
+        {% else %}
+            <span>fibonacci sequence: &nbsp</span><span>{{ result_list.0 }}</span>
+        {% endif %}
+
+    </div>
+    <br>
+    <div>
+        {% if operation == "sum" %}
+            <span>sum: &nbsp</span><span>{{ result_sum }}</span>
+        {% else %}
+            <span>fibonacci: &nbsp</span><span>{{ sequence }}</span>
+        {% endif %}
+    </div>
+</div>
+
+</body>
+</html>
