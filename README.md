@@ -1,3 +1,10 @@
+# demo python task
+#### BASE_DIR: ./django_projects/01_demoProject/work
+
+## sum of a list & fibonacci
+![alt video1](videos/work.gif)
+
+
 # demo project
 #### BASE_DIR: ./django_projects/01_demoProject
 
