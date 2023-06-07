@@ -1,7 +1,7 @@
-"""demo URL Configuration
+"""django3 URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/2.2/topics/http/urls/
+    https://docs.djangoproject.com/en/3.2/topics/http/urls/
 Examples:
 Function views
     1. Add an import:  from my_app import views
@@ -16,21 +16,13 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
+# 不用纠结进入father path， 引入app 就直接 import
+import a01_basic
+
 urlpatterns = [
     path('admin/', admin.site.urls),
 
-    #index path
-    path("index", include("index.urls")),
-
-    #post list path
-    path("demo/blog/", include("blog.urls")),
-
-    # user register / login
-    path("demo/user/", include("user.urls")),
-
-
-    # ddmo the sum and fibonacci
-    path("work/", include("work.urls")),
-
+    # 负责所有的 app1 的 请求
+    path('a01/', include('a01_basic.urls')),
 
 ]
