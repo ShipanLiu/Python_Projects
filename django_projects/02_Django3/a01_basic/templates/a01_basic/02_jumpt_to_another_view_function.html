@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>T13</title>
+</head>
+<body>
+    <div>
+        <!--注意： t14_path 要加上 引号，因为这里不是 双{{，而是 双{%-->
+        <!--a01_basic:t14_path ==> a01_basic 是 urls.py 里面的 app_name = "a01_basic"， t14_path 是 path name-->
+        <!--简而言之： 就是哪个 urls 里面的 哪个 path-->
+        <a href="{% url 'a01_basic:t14_path' 2099 %}">jumpt to t14</a>
+        <!--就会跳到  http://127.0.0.1:8000/a01/t14/2099/-->
+    </div>
+
+</body>
+</html>

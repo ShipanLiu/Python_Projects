@@ -1,6 +1,8 @@
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
+from django.urls import reverse
 from django.shortcuts import render
 import uuid
+
 
 # Create your views here.
 
@@ -25,14 +27,17 @@ def t02_handle(request):
     print(dir(request))
     return render(request, "a01_basic/01_test_html.html")
 
-#动态path 带参数
+
+# 动态path 带参数
 def t03_handle(request, year, my_slug):
     # 等价于： "the year is: %s"%{year}
     # 这是 f-string，
     return HttpResponse(f"the year and slug are : {year}, slug: {my_slug}")
 
+
 def t04_string_handle(request, my_string):
     return HttpResponse(f"my_string: {my_string}")
+
 
 #  http://127.0.0.1:8000/a01/t05/jier/01/   ====>  my_path: jier/01
 def t05_path_handle(request, my_path):
@@ -40,9 +45,12 @@ def t05_path_handle(request, my_path):
 
 
 #  http://127.0.0.1:8000/a01/t06/ab621f25-052d-11ee-9af7-54e1ad7927b0/  ===>  my_uuid: ab621f25-052d-11ee-9af7-54e1ad7927b0
-print(uuid.uuid1())  #  17ebea7d-052d-11ee-bf20-54e1ad7927b0
+print(uuid.uuid1())  # 17ebea7d-052d-11ee-bf20-54e1ad7927b0
+
+
 def t06_uuid_handle(request, my_uuid):
     return HttpResponse(f"my_uuid: {my_uuid}")
+
 
 # http://127.0.0.1:8000/a01/t07/1980/  ==> my_year: 1980
 def t07_diy_type_handle(request, my_year):
@@ -52,8 +60,10 @@ def t07_diy_type_handle(request, my_year):
 def t08_re_path_handle(request, year, month, my_slug):
     return HttpResponse(f"year: {year}, month: {month}, my_slug: {my_slug}")
 
+
 def t09_handle(request, page_number):
     return HttpResponse(f"page_number: {page_number}")
+
 
 # 假如没有传 blog_number，blog_number  默认值是 2
 #  http://127.0.0.1:8000/a01/t10/  ===》 blog_number: 2
@@ -62,4 +72,41 @@ def handle_t10(request, blog_number=2):
     return HttpResponse(f"blog_number: {blog_number}")
 
 
+def t11_handle_history(request):
+    return HttpResponse("history")
 
+
+def t11_handle_edit(request):
+    return HttpResponse("edit")
+
+
+def t11_handle_discuss(request):
+    return HttpResponse("discuss")
+
+
+# http://127.0.0.1:8000/a01/t12/  ===>  username: jier, pwd: 1234
+def t12_handle(request, username, pwd):
+    return HttpResponse(f"username: {username}, pwd: {pwd}")
+
+
+# 测试 反向解析
+# http://127.0.0.1:8000/a01/t13   ===>   http://127.0.0.1:8000/a01/t14/1998/
+def t13_handle(request):
+    # goto path("t14/<int:number>", views.t14_handle, name="t14_path")
+    # 第一种方法 redirect， 带参数
+    # http://127.0.0.1:8000/a01/t13   ===>   http://127.0.0.1:8000/a01/t14/1998/
+    # return HttpResponseRedirect("/a01/t14/1998/")
+
+    # 第一种方法 redirect， 带参数
+    # 我要忘记 传参数， reverse 里用的是 ”t14“, 用于 url 反向解析
+    # a01_basic:t14_path ==> a01_basic 是 urls.py 里面的 app_name = "a01_basic"， t14_path 是 path name
+    # http://127.0.0.1:8000/a01/t13 ===> http://127.0.0.1:8000/a01/t14/2023/
+    # return HttpResponseRedirect(reverse("a01_basic:t14_path", args=[2023]))
+
+    # 我直接跳到html， 在 html 中 访问 "t14"
+    return render(request, "a01_basic/02_jumpt_to_another_view_function.html")
+
+
+def t14_handle(request, number=999):  # num 默认值 999
+    # 访问 其他 path
+    return HttpResponse(f"welcome to t14, num: {number}")
