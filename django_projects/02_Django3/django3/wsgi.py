@@ -11,6 +11,7 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
+# 在部署的 时候
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'django3.settings')
 
 application = get_wsgi_application()
