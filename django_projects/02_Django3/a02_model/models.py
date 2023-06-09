@@ -156,7 +156,7 @@ class Group(models.Model):
     members = models.ManyToManyField(
         Person,
         through="Membership",
-        through_fields=("person", "group")
+        through_fields=("group", "person")
     )
     create_time = models.DateTimeField("create time", auto_now_add=True, null=True, blank=True)
     update_time = models.DateTimeField("update time", auto_now=True, null=True, blank=True)
@@ -169,15 +169,15 @@ class Group(models.Model):
 
 
 class Membership(models.Model):
-    person = models.ForeignKey(Group, on_delete=models.CASCADE)
-    group = models.ForeignKey(Person, on_delete=models.CASCADE)
+    group = models.ForeignKey(Group, on_delete=models.CASCADE)
+    person = models.ForeignKey(Person, on_delete=models.CASCADE)
     # 自定义： 表示 membership 的 等级
     level = models.IntegerField(default=1)
     create_time = models.DateTimeField("create time", auto_now_add=True, null=True, blank=True)
     update_time = models.DateTimeField("update time", auto_now=True, null=True, blank=True)
 
     def __str__(self):
-        return "Membership: persion: %s, group: %s"%(self.person,  self.group)
+        return "person: %s, group: %s"%(self.person,  self.group)
 
     class Meta:
         db_table = "a02_membership"
@@ -207,6 +207,7 @@ class Membership(models.Model):
 # 2,1,2,1,2023-06-08 18:37:52.122945,2023-06-08 18:37:52.122945
 
 
+#多对象查询： Group 里有 members， members 指的就是 Person， 我们可以按照 members 中的 first_name 来查询
 
 
 
