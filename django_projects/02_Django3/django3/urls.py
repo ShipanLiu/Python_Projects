@@ -25,4 +25,6 @@ urlpatterns = [
     # 负责所有的 app1 的 请求
     path('a01/', include('a01_basic.urls')),
 
+    path('a03/', include('a03_view.urls')),
+
 ]
