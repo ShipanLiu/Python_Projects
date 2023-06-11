@@ -43,14 +43,12 @@ urlpatterns = [
 
 
     #从一个 table 里面拿到一个 record 或者 404
-    path("t10/<int:ques_id>", views.t10_get_object_or_404_handle)
+    path("t10/<int:ques_id>/", views.t10_get_object_or_404_handle),
 
 
     # from django.views import generic 里面  除了 View 意外， 还有 DetailView， ListView。。。。
-
-
-
-
+    # 同样是 class based view 进行 request 的 回复， 注意 只能是 pk， 不能是 其他名字
+    path("t11/<int:pk>/", views.T11DetailedVieww.as_view(), name="t11_detailed_view")
 
 
 ]

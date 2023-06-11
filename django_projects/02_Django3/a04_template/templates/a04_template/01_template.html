@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>渲染 实体， 列表， 字典</title>
+</head>
+<body>
+<h2>取出一个 Person</h2>
+<ul>
+    <li>name: {{target_person.name}}</li>
+    <li>age: {{target_person.age}}</li>
+    <li>sex: {{target_person.sex}}</li>
+    <li>salary: {{target_person.salary}}</li>
+    <li>create_time: {{target_person.create_time}}</li>
+    <li>update_time: {{target_person.update_time}}</li>
+</ul>
+
+<h2>字典, 第一种方式</h2>
+<ul>
+    <li>{{dict.bj}}</li>
+    <li>{{dict.sh}}</li>
+</ul>
+
+<h2>字典, 第二种方式</h2>
+{% for key, value in dict.items %}
+<ul>
+    <li>{{ key }} : {{ value }}</li>
+</ul>
+{% endfor%}
+
+<h2>[{},{}] 这种遍历方式</h2>
+{% for item in list%}
+{% for key, value in dict.items %}
+<ul>
+    <li>{{ key }} : {{ value }}</li>
+</ul>
+{% endfor%}
+<br><br>
+{% endfor%}
+
+
+<h2>Perosn list, 第一种方式</h2>
+<ul>
+    <li>{{all_person.0.name}}</li>
+    <li>{{all_person.1.name}}</li>
+    <li>{{all_person.2.name}}</li>
+    <li>{{all_person.3.name}}</li>
+</ul>
+
+<h2>Perosn list, 第二种方式</h2>
+<table border="1">
+    <tr>
+        <th>counter[start from 0]</th>
+        <th>name</th>
+        <th>age</th>
+        <th>sex</th>
+        <th>salary</th>
+        <th>create_time</th>
+        <th>update_time</th>
+    </tr>
+    {% for person in all_person %}
+        <tr>
+            <td>{{ forloop.counter0 }}</td>
+            <td>{{person.name}}</td>
+            <td>{{person.age}}</td>
+            <td>{{person.sex}}</td>
+            <td>{{person.salary}}</td>
+            <td>{{person.create_time}}</td>
+            <td>{{person.update_time}}</td>
+        </tr>
+    {% endfor%}
+</table>
+
+<h2>测试 url 标签</h2>
+<!--会跳到： http://127.0.0.1:8000/a03/t07/-->
+<a href="{% url 'a03_view:t07_handle_file' %}">jump to a03_view:t07_handle_file</a>
+
+<br>
+
+<!--会跳到： http://127.0.0.1:8000/a03/t07/-->
+<a href="{% url 'a03_view:t02_errorNr_handle' errorNr=10 %}">带参数跳转</a>
+</body>
+</html>

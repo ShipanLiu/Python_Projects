@@ -27,4 +27,6 @@ urlpatterns = [
 
     path('a03/', include('a03_view.urls')),
 
+    path('a04/', include('a04_template.urls')),
+
 ]

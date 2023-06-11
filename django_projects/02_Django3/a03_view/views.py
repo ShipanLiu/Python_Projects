@@ -109,6 +109,16 @@ def t10_get_object_or_404_handle(request, ques_id):
                 # Raised by:	a03_view.views.t10_get_object_or_404_handle
 
 
+# line11  发现继承的是 View， 可不可以继承 其他的 View呢？
+# 参数 pk 不用传入， dj 会自动处理。
+from django.views import generic
+class T11DetailedVieww(generic.DetailView): # 不再继承View， 而是继承 DetailView
+    model = Question
+    template_name = "a03_view/02_from_model_to_html.html"
+
+
+
+
 
 
 
