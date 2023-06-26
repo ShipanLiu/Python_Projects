@@ -14,3 +14,19 @@ if __name__ == '__main__':
     print_hi('PyCharm')
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
+
+
+
+
+
+c = 0
+def robar(a, b):
+    c = a + b
+    print(c)
+
+
+m = 10
+n = 10
+
+robar(m, n)
+

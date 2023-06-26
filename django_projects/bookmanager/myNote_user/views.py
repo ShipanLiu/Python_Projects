@@ -77,6 +77,7 @@ def handle_login(request):
             print("session ok")
             return HttpResponseRedirect("/index")
 
+        # 这里加入session 过期， 那么就使用 cookie
         cookie_username = request.COOKIES.get("username")
         cookie_uid = request.COOKIES.get("uid")
 
@@ -148,7 +149,7 @@ def handle_logout(request):
     #check if cookies and sessions exist or not
     #删除session值
     if 'username' in request.session:
-        del request.session['username']
+        del request.session['username'] #del的作用是 解除引用
     if 'uid' in request.session:
         del request.session['uid']
     #删除Cookies

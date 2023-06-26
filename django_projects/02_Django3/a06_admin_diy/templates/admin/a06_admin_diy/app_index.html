@@ -1,0 +1,12 @@
+<!--继承原生的 app_index.html文件, 你继承人家原有的-->
+{% extends "admin/app_index.html" %}
+
+<!--在这基础之上，开始进行覆盖， 写一些 按钮 或者  link-->
+{% block sidebar %}
+覆盖 admin/app_index.html
+<!--a03_view 是在 app "a03_view" 里面urls.py 里定义的 name，t07_handle_file 是 path name-->
+<br>
+<a href="{% url 'a03_view:t07_handle_file' %}">来看一张图片！（使用url）</a>
+<br>
+<a href="/a03/t07/">来看一张图片！(第二种方式路径)</a>
+{% endblock %}

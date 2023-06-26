@@ -104,7 +104,7 @@ urlpatterns = [
     path("myNote/user/", include("myNote_user.urls")),
     path("myNote/notes/", include("myNote_note.urls")),
 
-    #整个应用的 首页
-    path("index", include("myNote_index.urls"))
+    #整个云笔记项目 首页
+    path("index/", include("myNote_index.urls")),
 
 ]
