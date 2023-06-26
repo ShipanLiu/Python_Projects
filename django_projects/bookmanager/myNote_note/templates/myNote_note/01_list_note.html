@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>notes</title>
+</head>
+<body>
+
+<!--用户必须登陆，否则看不到 notes， 也防止了直接访问： /myNote/notes/-->
+{% if request.session.username %}
+    <p>
+        user: {{ request.COOKIES.username }}
+    </p>
+    <table border="1">
+        <tr>
+            <th>id</th>
+            <th>title</th>
+            <th>create_time</th>
+            <th>update_time</th>
+            <th>user</th>
+        </tr>
+            <!--使用一个 for loop，把notes 弄出来，并且只显示当前user 的notes-->
+        {% for note in notes %}
+            <form action="">
+                <tr>
+                    <td>{{ note.id }}</td>
+                    <td>{{ note.title }}</td>
+                    <td>{{ note.create_time }}</td>
+                    <td>{{ note.update_time }}</td>
+                    <td>{{ note.user.username }}</td>
+                    <td>
+                        <input type="submit" value="delete">
+                    </td>
+                </tr>
+            </form>
+        {% endfor %}
+    </table>
+
+
+{% elif request.COOKIES.username %}
+    <!--session 里面没有（session已经过期）， 假如cookie里面有 username-->
+     <p>
+        user: {{ request.COOKIES.username }}
+    </p>
+    <table border="1">
+        <tr>
+            <th>id</th>
+            <th>title</th>
+            <th>create_time</th>
+            <th>update_time</th>
+            <th>user</th>
+        </tr>
+            <!--使用一个 for loop，把notes 弄出来，并且只显示当前user 的notes-->
+        {% for note in notes %}
+        <form action="">
+            <tr>
+                <td>{{ note.id }}</td>
+                <td>{{ note.title }}</td>
+                <td>{{ note.create_time }}</td>
+                <td>{{ note.update_time }}</td>
+                <td>{{ note.user.username }}</td>
+                <td>
+                    <input type="submit" value="delete">
+                </td>
+            </tr>
+        </form>
+        {% endfor %}
+    </table>
+
+{% else %}
+    <h2>please first login</h2>
+    <p>
+        <a href="/myNote/user/login">login</a>
+    </p>
+    <p>
+        <a href="/myNote/user/reg">register</a>
+    </p>
+{% endif %}
+</body>
+</html>
