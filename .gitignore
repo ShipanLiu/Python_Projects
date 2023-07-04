@@ -1,12 +1,14 @@
 ###not exposure my mysql connection data in Github###
 
-django_projects/bookmanager/bookmanager/settings.py
-
-django_projects/bookmanager/.idea/
-
 ###ignore .idea in any  any subdirectory recursively. ###
 **/.idea/
 **/settings.py
-**/migrations/
 
 **/__pycache__/
+
+**/__pycache__
+
+**/migrations/
+
+**/*.pyc
+
