@@ -7,9 +7,6 @@ django_projects/bookmanager/.idea/
 ###ignore .idea in any  any subdirectory recursively. ###
 **/.idea/
 **/settings.py
+**/migrations/
 
-
-
-
-
-
+**/__pycache__/
