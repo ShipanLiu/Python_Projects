@@ -1,4 +1,4 @@
-"""myapp URL Configuration
+"""CBV URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/3.2/topics/http/urls/
@@ -15,10 +15,13 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-import day04
+
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-
-    path('day04/', include('day04.urls')),
+    path('t01/', include('t01_school.urls')),
+    path('t02/', include('t02_form.urls')),
+    # path('t03/', include('t03_store.urls')),
+    path('t04/', include('t04_restfulApi.urls')),
 ]

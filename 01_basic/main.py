@@ -15,10 +15,6 @@ if __name__ == '__main__':
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
 
-
-
-
-
 c = 0
 def robar(a, b):
     c = a + b
