@@ -6,7 +6,7 @@
 ###not exposure my mysql connection data in Github###
 ###**/settings.py
 **/secrets.py
-
+**/.DS_Store
 **/__pycache__/
 
 **/__pycache__
