@@ -1,7 +1,8 @@
-"""myapp URL Configuration
+"""
+URL configuration for project project.
 
 The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/3.2/topics/http/urls/
+    https://docs.djangoproject.com/en/4.2/topics/http/urls/
 Examples:
 Function views
     1. Add an import:  from my_app import views
@@ -15,10 +16,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-import day04
+import debug_toolbar
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-
-    path('day04/', include('day04.urls')),
+    path('playground/', include('playground.urls')),
+    path('store/', include('store.urls')),
+    path('__debug__/', include(debug_toolbar.urls)),
 ]
