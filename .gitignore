@@ -4,7 +4,8 @@
 **/.vscode/
 
 ###not exposure my mysql connection data in Github###
-**/settings.py
+###**/settings.py
+**/secrets.py
 
 **/__pycache__/
 
