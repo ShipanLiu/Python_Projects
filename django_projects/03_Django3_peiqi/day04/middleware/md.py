@@ -18,9 +18,8 @@ from django.utils.deprecation import MiddlewareMixin  #这是所有中间件的 
 
 
 #  这是 最原始的 写法， 现在参照 源码的 写法
-'''
 
-class MyMD(object):
+class MyMD0(object):
 
   def __init__(self, get_response):
     self.get_response = get_response
@@ -33,13 +32,15 @@ class MyMD(object):
     print("go out")
     return response
 
-'''
 
 
 #  这是 参照源码父类 之后的 写法
+# 但是还是django 1 里面的 写法： 武沛奇坑人
+# The code structure you provided is representative of the older style of defining middleware in Django before Django 1.10. Prior to Django 1.10,
+# middleware classes would typically define methods like process_request and process_response to handle requests and responses respectively.
+# The newer style of middleware, which you've been working with, is simpler and uses the __call__ method directly.
 
-'''
-class MyMD(object):
+class MyMD1(object):
 
   def __init__(self, get_response):
     self.get_response = get_response
@@ -76,8 +77,15 @@ class MyMD(object):
   def process_response(self, request, response):
     print("执行 process_response 这个方法")
     return HttpResponse("我谁都不用")
-'''
 
+
+
+
+
+"""
+卧槽：武沛奇的教程禁用啊！ 下面的 写法主要是为了升级 Django 1.10 之前版本的中间件 的 方法， Document 里的写法还是 定义 __init__  和  __call__方法
+
+"""
 
 class MyMD(MiddlewareMixin):
   def process_request(self, request):

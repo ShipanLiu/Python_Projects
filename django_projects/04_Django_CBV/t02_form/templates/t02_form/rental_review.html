@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>rental review</title>
+</head>
+<body>
+
+    <h1>this is rental review page</h1>
+
+    <a href="{% url 't02_form:thank_you' %}">go to thank you page</a>
+
+    <form action="" method="post">
+        {% csrf_token %}
+        {#  view 的 form 传出过来 就是 这个值   #}
+        {{ form }}
+        {#   这就自动是一个button  #}
+        <input type="submit" value="老哥点击提交">
+    </form>
+
+</body>
+</html>
