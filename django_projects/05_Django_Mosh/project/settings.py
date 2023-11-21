@@ -85,14 +85,16 @@ WSGI_APPLICATION = 'project.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
+from . import secrets
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'dj_database5_mosh',
-        'USER': 'shipan',
-        'PASSWORD': '19980223',
-        'HOST': 'localhost',   # Set to empty string for localhost.
-        'PORT': '5432',            # Set to empty string for default.
+        'NAME': secrets.DATABASE_NAME,
+        'USER': secrets.DATABASE_USER,
+        'PASSWORD': secrets.DATABASE_PASSWORD,
+        'HOST': secrets.DATABASE_HOST,   # Set to empty string for localhost.
+        'PORT': secrets.DATABASE_PORT,            # Set to empty string for default.
     }
 }
 
@@ -139,8 +141,7 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FtoFiIELD = 'django.db.models.BigAueld'
 
-# 比如"unit_priice" 的值是decimal， 但是 传回来见的 json 是 string 格式，这里设置一下
-
+# 比如"unit_price" 的值是decimal， 但是 传回来见的 json 是 string 格式，这里设置一下
 REST_FRAMEWORK= {
     "COERCE_DECIMAL_TO_STRING": False
 }
