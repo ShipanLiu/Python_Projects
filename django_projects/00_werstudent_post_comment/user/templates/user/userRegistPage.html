@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Regist</title>
+</head>
+
+<style>
+    table, tr, th, td {
+        border: 1px solid pink;
+         border-collapse: collapse;
+    }
+    table tr td {
+        text-align: center;
+    }
+</style>
+
+<script>
+    function empty() {
+        document.getElementById("form_reg").reset()
+    }
+
+</script>
+<body>
+    <form id="form_reg" action="/demo/user/reg" method="post">
+        <table>
+            <tr>
+                <td>
+                    username
+                </td>
+                <td>
+                    <input class="input_reg" type="text" name="username" value="{{ username }}">
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    pwd
+                </td>
+                <td>
+                    <input class="input_reg" type="text" name="password1" value="{{ pwd1 }}">
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    pwd repeat
+                </td>
+                <td>
+                    <input class="input_reg" type="text" name="password2" value="{{ pwd2 }}">
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    submit
+                </td>
+                <td>
+                    <input type="submit" value="register">
+                    <button type="reset" onclick="empty()">reset</button>
+
+                </td>
+            </tr>
+        </table>
+    </form>
+    <div>
+        <p style="color: red">
+            {{ warn }}
+        </p>
+    </div>
+</body>
+</html>

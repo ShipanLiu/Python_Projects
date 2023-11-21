@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Homepage</title>
+</head>
+<body>
+
+    {% if request.session.username %}
+        <span>
+            Welcome: {{ request.session.username }}
+        </span>
+        <span>&nbsp | &nbsp</span>
+        <span>
+            <a href="/demo/blog/posts">blog</a>
+        </span>
+        <apan>
+            <a href="/demo/user/logout">logout</a>
+        </apan>
+    {% else %}
+        <p>
+            <a href="/demo/user/login">login</a>
+        </p>
+        <p>
+            <a href="/demo/user/reg">register</a>
+        </p>
+    {% endif %}
+</body>
+</html>
