@@ -15,15 +15,18 @@ def say_hallo(request):
 
 @api_view(["GET", "POST"]) # so "request" as a parameter will no longer belong to “django” but to "django_restframework"
 def product_list(request):
-    # because in the API we also need to involve the "collection" with "products",
-    # so we load the "collection" and "products" together
-    # this is like a join operation, Product + left outer join + Collection, This is a method used to optimize database queries
-    queryset = Product.objects.select_related("collection").all()
-    # serializer 可以接受单个Product，也可以接受 一个 queryset
-    # slizer = ProductSerializer(queryset, many=True, context={"request": request}) # 把 drf 的 request 传入 serializer
-    slizer = ProductModelSerializer(queryset, many=True, context={"request": request})
-    dict = slizer.data
-    return Response(dict)
+    if request.method == "GET":
+        # because in the API we also need to involve the "collection" with "products",
+        # so we load the "collection" and "products" together
+        # this is like a join operation, Product + left outer join + Collection, This is a method used to optimize database queries
+        queryset = Product.objects.select_related("collection").all()
+        # serializer 可以接受单个Product，也可以接受 一个 queryset
+        # slizer = ProductSerializer(queryset, many=True, context={"request": request}) # 把 drf 的 request 传入 serializer
+        slizer = ProductModelSerializer(queryset, many=True, context={"request": request})
+        dict = slizer.data
+        return Response(dict)
+    elif request.method == "POST":
+        
 
 
 @api_view()
