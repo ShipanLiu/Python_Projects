@@ -26,8 +26,17 @@ def product_list(request):
         dict = slizer.data
         return Response(dict)
     elif request.method == "POST":
-        
-
+        # ProductModelSerializer will deserialize the data
+        dSlizer = ProductModelSerializer(data=request.data)
+        # if dSlizer.is_valid():
+        #     dSlizer.validated_data
+        #     return Response("ok")
+        # else:
+        #     return Response(dSlizer.errors, status=status.HTTP_400_BAD_REQUEST)
+        # 更加简介的写法：if it is not valid, then give exception
+        dSlizer.is_valid(raise_exception=True)
+        print(dSlizer.validated_data)
+        return Response("ok")
 
 @api_view()
 def product_detail(request, id):

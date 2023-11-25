@@ -73,9 +73,18 @@ class ProductModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         # "unit_price" 被 “price” 取代, because you have defined the "price" field
-        fields = ["id", "title", "price", "price_with_tax", "collection_obj", "collection_link"]
+        fields = ["id", "title", "price", "price_with_tax", "collection_id", "collection_obj", "collection_link"]
+        extra_kwargs = {
+            "price_with_tax": {"required": False},
+            "collection_obj": {"required": False},
+            "collection_link": {"required": False},
+        }
     price = serializers.DecimalField(max_digits=6, decimal_places=2, source="unit_price") # 1234.56
     price_with_tax = serializers.SerializerMethodField(method_name="calculate_price_wit_tax")
+    collection_id = serializers.PrimaryKeyRelatedField(
+        queryset=Collection.objects.all(),
+        source="collection"
+    )
     collection_obj = CollectionSerializer(source="collection")
     collection_link = serializers.HyperlinkedRelatedField(
         queryset=Collection.objects.all(),
