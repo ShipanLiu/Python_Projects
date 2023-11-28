@@ -34,8 +34,10 @@ def product_list(request):
         # else:
         #     return Response(dSlizer.errors, status=status.HTTP_400_BAD_REQUEST)
         # 更加简介的写法：if it is not valid, then give exception
-        dSlizer.is_valid(raise_exception=True)
+        dSlizer.is_valid(raise_exception=True) # check the validate rules defined in ProductModelSerializer
         print(dSlizer.validated_data)
+        # 自动存到数据库
+        dSlizer.save()
         return Response("ok")
 
 @api_view()

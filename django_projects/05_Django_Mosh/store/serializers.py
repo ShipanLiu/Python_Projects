@@ -73,22 +73,14 @@ class ProductModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         # "unit_price" 被 “price” 取代, because you have defined the "price" field
-        fields = ["id", "title", "price", "price_with_tax", "collection_id", "collection_obj", "collection_link"]
-        extra_kwargs = {
-            "price_with_tax": {"required": False},
-            "collection_obj": {"required": False},
-            "collection_link": {"required": False},
-        }
+        fields = ["id", "title", "slug", "description", "price", "inventory", "price_with_tax", "collection", "collection_obj", "collection_link"]
     price = serializers.DecimalField(max_digits=6, decimal_places=2, source="unit_price") # 1234.56
     price_with_tax = serializers.SerializerMethodField(method_name="calculate_price_wit_tax")
-    collection_id = serializers.PrimaryKeyRelatedField(
-        queryset=Collection.objects.all(),
-        source="collection"
-    )
-    collection_obj = CollectionSerializer(source="collection")
+    collection_obj = CollectionSerializer(required=False, source="collection")
     collection_link = serializers.HyperlinkedRelatedField(
         queryset=Collection.objects.all(),
         view_name = "collection-detail",
+        required=False,
         source = "collection"
     )
 
@@ -100,6 +92,13 @@ class ProductModelSerializer(serializers.ModelSerializer):
         # result是 Decimal格式，rounded to 2 decimal places
         return round(result, 2)
 
+    # define data validate rules(here override the validate method from serializers)
+    # def validate(self, data):
+    #     # pwd consistency
+    #     if data["password"] != data["confirm_password"]:
+    #         return serializers.ValidationError("password and confirm_password do not match")
+    #     # if all right, then return the data
+    #     return data
 
 class CollectionModelSerializer(serializers.ModelSerializer):
     class Meta:

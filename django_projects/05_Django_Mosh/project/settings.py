@@ -89,7 +89,7 @@ from . import secrets
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
+        'ENGINE': 'django.db.backends.mysql',
         'NAME': secrets.DATABASE_NAME,
         'USER': secrets.DATABASE_USER,
         'PASSWORD': secrets.DATABASE_PASSWORD,
