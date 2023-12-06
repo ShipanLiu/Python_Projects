@@ -68,13 +68,14 @@ class ProductSerializer(serializers.Serializer):
 
 
 # 这比 上面的 ProductSerializer 更高级， 使用 Model Serilizer, 会使更改 “validate rules 更加容易”，
-# 原理 就是直接使用 Model 的Field，不用再定义新的 fields
+# 原理 就是直接使用 Model 的Field，不用再定义新的 fields, in this case, if you want to change the "validation rules"
+# then you only need to change one place.
 class ProductModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         # "unit_price" 被 “price” 取代, because you have defined the "price" field
-        fields = ["id", "title", "slug", "description", "price", "inventory", "price_with_tax", "collection", "collection_obj", "collection_link"]
-    price = serializers.DecimalField(max_digits=6, decimal_places=2, source="unit_price") # 1234.56
+        fields = ["id", "title", "slug", "description", "unit_price", "inventory", "price_with_tax", "collection", "collection_obj", "collection_link"]
+    # price = serializers.DecimalField(max_digits=6, decimal_places=2, source="unit_price") # 1234.56
     price_with_tax = serializers.SerializerMethodField(method_name="calculate_price_wit_tax")
     collection_obj = CollectionSerializer(required=False, source="collection")
     collection_link = serializers.HyperlinkedRelatedField(
@@ -87,10 +88,30 @@ class ProductModelSerializer(serializers.ModelSerializer):
 
     # serialized_product is the product(model) that is serialized
     def calculate_price_wit_tax(self, serialized_product: Product):
-        # attention: "Decimal" can NOT multiply "float number"
+        # attention: "Decimal,小数" can NOT multiply "float number，浮点数"
         result = serialized_product.unit_price * Decimal(1.1)
         # result是 Decimal格式，rounded to 2 decimal places
         return round(result, 2)
+
+    # here override the create method, for creating a new tuple in th edatabase, it is responsible for creating new instances of a model based on the validated data
+    # create() is called after calling save() in the views.py
+    # def create(self, validated_data):
+    #     #create a new Object, take the validated_data dictionairy, the **validated_data syntax unpacks the dictionary, passing the key-value pairs as arguments to the Product model constructor
+    #     newProduct = Product(**validated_data)
+    #     # set a special field, useful for setting default values or adding data that is not provided by the API user but is required by the application's logic.
+    #     newProduct.other = 1
+    #     newProduct.save()
+    #     return newProduct
+
+    # updaing a product, override the basic method in serilizer:
+    # def update(self, instance, validated_data):
+    #     # for example if you want to update "unit_price"
+    #     instance.unit_price = validated_data.get("unit_price")
+    #     instance.save()
+    #     return instance
+
+
+
 
     # define data validate rules(here override the validate method from serializers)
     # def validate(self, data):

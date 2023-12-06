@@ -26,7 +26,7 @@ def product_list(request):
         dict = slizer.data
         return Response(dict)
     elif request.method == "POST":
-        # ProductModelSerializer will deserialize the data
+        # ProductModelSerializer will deserialize the data(the data here is from Frontend)
         dSlizer = ProductModelSerializer(data=request.data)
         # if dSlizer.is_valid():
         #     dSlizer.validated_data
@@ -35,12 +35,14 @@ def product_list(request):
         #     return Response(dSlizer.errors, status=status.HTTP_400_BAD_REQUEST)
         # 更加简介的写法：if it is not valid, then give exception
         dSlizer.is_valid(raise_exception=True) # check the validate rules defined in ProductModelSerializer
+        # you have to use ".is_valid" before using "validated_data"
         print(dSlizer.validated_data)
         # 自动存到数据库
         dSlizer.save()
         return Response("ok")
 
-@api_view()
+
+@api_view(["GET", "PUT", "PATCH"]) # PATCH, sometimes, one can only update a subset of data, so Patch is mostly used.
 def product_detail(request, id):
     # get the targeted product，get_object_or_404() is same as "try()... catch()..."
     product = get_object_or_404(Product, pk=id)
