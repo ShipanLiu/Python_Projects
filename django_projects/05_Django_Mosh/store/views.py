@@ -46,13 +46,20 @@ def product_list(request):
 def product_detail(request, id):
     # get the targeted product，get_object_or_404() is same as "try()... catch()..."
     product = get_object_or_404(Product, pk=id)
-    # create a serilizer and pass the "product" into it
-    slizer = ProductSerializer(product, many=False, context={"request": request})
-    # now get the created "dictionary" from slizer
-    dict = slizer.data
-    # the drf will create automatically convert the "dict" into JSON format
-    # happen under the hood the django will create a JSONRenderer Obj  ----> convert "dict" into "obj"
-    return Response(dict)
+    if request.method == "GET":
+        # create a serilizer and pass the "product" into it
+        slizer = ProductSerializer(product, many=False, context={"request": request})
+        # now get the created "dictionary" from slizer
+        dict = slizer.data
+        # the drf will create automatically convert the "dict" into JSON format
+        # happen under the hood the django will create a JSONRenderer Obj  ----> convert "dict" into "obj"
+        return Response(dict)
+    elif request.method == "PUT":
+        # deserilize the data
+        # validate the data
+        # save to the database
+        pass
+
 
 
 @api_view()
