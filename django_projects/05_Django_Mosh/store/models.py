@@ -9,6 +9,10 @@ class Promotion(models.Model):
 
 class Collection(models.Model):
     title = models.CharField(max_length=255)
+    # '+' it instructs Django not to create a reverse relation from the related object back to the object with the ForeignKey.
+    # 因为 Product class 已经有了 collection 这个key, so Collection class can't have a product key: deadloop
+    # on_delete=models.SET_NULL: if the product is deleted, then the "featured_product" will be set to null
+    # 因为null=True, 所以 在POST request 的时候， "featured_product" is not required.
     featured_product = models.ForeignKey(
         'Product', on_delete=models.SET_NULL, null=True, related_name='+', blank=True)
 
@@ -23,7 +27,7 @@ class Product(models.Model):
     title = models.CharField(max_length=255)
     # For example, a URL like /products/red-sports-car , "-"\'
     slug = models.SlugField()
-    # null=True means it is optional
+    # null=True means it is optional，在POSt 的时候， This field is NOT required
     description = models.TextField(null=True, blank=True)
     unit_price = models.DecimalField(
         max_digits=6,

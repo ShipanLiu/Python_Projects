@@ -34,10 +34,10 @@ class ProductSerializer(serializers.Serializer):
         source="collection"
     )
     # this will use the " def __str__(self) -> str: return self.title" in Collection Model class
-    collection_name = serializers.StringRelatedField(source="collection")
+    collection_name = serializers.StringRelatedField(source="collection", read_only=True)
 
     # here the collection_obj will be an Obj {}
-    collection_obj = CollectionSerializer(source="collection")
+    collection_obj = CollectionSerializer(source="collection", read_only=True)
 
     # we create a hyperlink for the collection
     # view_name="collection-detail" is the url name in urls.py ==>  path("collections/<int:id>", views.collection_detail, name="collection-detail")
@@ -45,7 +45,7 @@ class ProductSerializer(serializers.Serializer):
     collection_link = serializers.HyperlinkedRelatedField(
         queryset=Collection.objects.all(),
         view_name="collection-detail",
-        source="collection"
+        source="collection",
     )
 
 
@@ -74,15 +74,15 @@ class ProductModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         # "unit_price" 被 “price” 取代, because you have defined the "price" field
-        fields = ["id", "title", "slug", "description", "unit_price", "inventory", "price_with_tax", "collection", "collection_obj", "collection_link"]
+        fields = ["id", "title", "slug", "description", "unit_price", "inventory", "collection", "price_with_tax", "collection_obj", "collection_link"]
     # price = serializers.DecimalField(max_digits=6, decimal_places=2, source="unit_price") # 1234.56
-    price_with_tax = serializers.SerializerMethodField(method_name="calculate_price_wit_tax")
-    collection_obj = CollectionSerializer(required=False, source="collection")
+    price_with_tax = serializers.SerializerMethodField(method_name="calculate_price_wit_tax", read_only=True)
+    collection_obj = CollectionSerializer(required=False, source="collection", read_only=True)
     collection_link = serializers.HyperlinkedRelatedField(
         queryset=Collection.objects.all(),
         view_name = "collection-detail",
         required=False,
-        source = "collection"
+        source = "collection",
     )
 
 
@@ -122,10 +122,29 @@ class ProductModelSerializer(serializers.ModelSerializer):
     #     # if all right, then return the data
     #     return data
 
+
+# 这样 POST request 可以为：-> http://127.0.0.1:8000/store/collections/
+# {
+#     "title": "test collection",
+#     "featured_product": 200
+# }
+# 注意： featured_product 只用给 integer（primary key）就行了，这是默认的.
+
 class CollectionModelSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Collection
-        fields = ["id", "title", "products_count"]
+        fields = ["id", "title", "featured_product", "products_count", "featured_product_obj"]
+
+    # use ProductModelSerializer, show Product Object only when “GET” method
+    # source="featured_product"，以featured_product 为 source， 来生成featured_product_obj。
+    featured_product_obj = ProductModelSerializer(read_only=True, source="featured_product")
 
     # the Collection model does not have "products_count", so I need to define here.
-    products_count = serializers.IntegerField(required=False)
+    # read_only  ==>  只用于从 database 里 rausholen
+    products_count = serializers.IntegerField(required=False, read_only=True)
+
+
+
+
+

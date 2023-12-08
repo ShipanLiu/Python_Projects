@@ -77,33 +77,64 @@ def product_detail(request, id):
         return Response({"message": f"delete product with id: {id} in success"}, status=status.HTTP_204_NO_CONTENT)
 
 
-@api_view(["GET", "PUT", "DELETE"])
-def collection_detail(request, pk):
-    target_collection = get_object_or_404(Collection, pk=pk)
-    # slizer = CollectionSerializer(target_collection, many=False)
-    slizer = CollectionModelSerializer(target_collection, many=False)
-    return Response(slizer.data)
+# >>>>>>>>>>>>>>Collection>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>.
+
+
 
 @api_view(["GET", "POST"])
 def collection_list(request):
     if request.method == "GET":
         # get teh queryset from database
-        # annotate(...): This method allows you to add extra fields to each model instance in the QuerySet. These fields are not part of your model; instead, they are calculated on the fly.
+        # annotate(...): This method allows you to add extra fields to each model instance in the "QuerySet". These fields are not part of your model; instead, they are calculated on the fly.
         # Here, you are creating a new field products_count in the QuerySet. This field will contain the count of related Product instances for each Collection.
         # "products" should be the related name from the Collection model to the Product model.
         queryset = Collection.objects.annotate(products_count=Count("products")).all()
-        # get slizer
-        slizer = CollectionModelSerializer(queryset, many=True)
-        # don;t need to validate the data, because this is GET
+        # get slizer, of course you need to prepare a "products_count" field in your "CollectionModelSerializer"
+        slizer = CollectionModelSerializer(queryset, many=True, context={'request': request})
+        # don't need to validate the data, because this is GET
         # response
         return Response(slizer.data)
     elif request.method == "POST":
         # get data from request
         # get dSlizer
-        dSlizer = CollectionModelSerializer(data=request.data)
+        dSlizer = CollectionModelSerializer(data=request.data, context={'request': request})
         # validate the data
         dSlizer.is_valid(raise_exception=True)
         # save to the database
-        dSlizer.save()
+        new_added_collection_item = dSlizer.save()
+        #{'dSlizer.data': {'id': 23, 'title': 'iphone', 'featured_product': 40, 'featured_product_obj': OrderedDict([('id', 40), ('title', 'Bread - Hamburger Buns'), ('slug', '-'), ('description', 'vel nulla eget eros elementum pellentesque quisque porta volutpat erat quisque erat eros viverra eget congue eget'), ('unit_price', Decimal('51.39')), ('inventory', 8), ('collection', 5), ('price_with_tax', Decimal('56.53')), ('collection_obj', OrderedDict([('id', 5), ('title', 'Stationary')])), ('collection_link', 'http://127.0.0.1:8000/store/collections/5')])}}
+        print({"dSlizer.data": dSlizer.data})
+        # {'dSlizer.validated_data': OrderedDict([('title', 'iphone'), ('featured_product', <Product: Bread - Hamburger Buns>)])}
+        print({"dSlizer.validated_data": dSlizer.validated_data})
+        # {'new_added_collection_item': <Collection: iphone>}
+        print({"new_added_collection_item": new_added_collection_item})
         # return response
-        return Response({"message": "a new collection is created", "validated_data": dSlizer.validated_data}, status=status.HTTP_201_CREATED)
+        return Response({"message": "a new collection is created", "new_added_collection_item": dSlizer.data}, status=status.HTTP_201_CREATED)
+
+
+@api_view(["GET", "PUT", "DELETE"])
+def collection_detail(request, pk):
+    # bacause in the "CollectionModelSerializer", there exist a field "products_count", so your target_collection has to contain a "products_count", you can only use annotate(add on fly)
+    target_collection = get_object_or_404(Collection.objects.annotate(products_count=Count("products")), pk=pk)
+    if request.method == "GET":
+        # generate the sLizer, put the source into it.
+        slizer = CollectionModelSerializer(target_collection, many=False)
+        # you don't have to validate because this is get.
+        return Response(slizer.data)
+    elif request.method == "PUT":
+        # get dSlizer
+        dSlizer = CollectionModelSerializer(target_collection, data=request.data, context={'request': request})
+        # validate data
+        dSlizer.is_valid(raise_exception=True)
+        # save to database
+        dSlizer.save() # the save() method will call the update() method inside of "CollectionModelSerializer"
+        return Response({"updated_collection": dSlizer.data})
+
+    elif request.method == "DELETE":
+        # if this collection has belonged products, then you can't delete
+        # "products" is the related_name in model "Products"
+        if target_collection.products.count() > 0:
+            return Response({"error": "collection contains some products, can not be deleted"})
+        target_collection.delete()
+        return Response({"message": f"target collection with id:{pk} and title:{target_collection.title} is deleted"})
+

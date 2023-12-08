@@ -70,9 +70,10 @@ class CollectionAdmin(admin.ModelAdmin):
             }))
         return format_html('<a href="{}">{} Products</a>', url, collection.products_count)
 
+    # overwrite the get_queryset method， add a extra field with "annotate", add on fly
     def get_queryset(self, request):
         return super().get_queryset(request).annotate(
-            products_count=Count('product')
+            products_count=Count('products')
         )
 
 
