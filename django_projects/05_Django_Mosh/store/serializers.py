@@ -103,6 +103,7 @@ class ProductModelSerializer(serializers.ModelSerializer):
     #     newProduct.save()
     #     return newProduct
 
+
     # updaing a product, override the basic method in serilizer:
     # def update(self, instance, validated_data):
     #     # for example if you want to update "unit_price"
@@ -124,4 +125,7 @@ class ProductModelSerializer(serializers.ModelSerializer):
 class CollectionModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Collection
-        fields = ["id", "title"]
+        fields = ["id", "title", "products_count"]
+
+    # the Collection model does not have "products_count", so I need to define here.
+    products_count = serializers.IntegerField(required=False)

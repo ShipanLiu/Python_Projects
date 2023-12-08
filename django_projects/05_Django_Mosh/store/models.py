@@ -21,7 +21,7 @@ class Collection(models.Model):
 
 class Product(models.Model):
     title = models.CharField(max_length=255)
-    # For example, a URL like /products/red-sports-car , "-"
+    # For example, a URL like /products/red-sports-car , "-"\'
     slug = models.SlugField()
     # null=True means it is optional
     description = models.TextField(null=True, blank=True)
@@ -33,7 +33,7 @@ class Product(models.Model):
     inventory = models.IntegerField(validators=[MinValueValidator(0)])
     last_update = models.DateTimeField(auto_now=True)
     # optional, because FK
-    collection = models.ForeignKey(Collection, on_delete=models.PROTECT)
+    collection = models.ForeignKey(Collection, on_delete=models.PROTECT, related_name="products")
     # this field is also optional, because it is a many to many field
     promotions = models.ManyToManyField(Promotion, blank=True)
 
@@ -69,6 +69,7 @@ class Customer(models.Model):
         ordering = ['first_name', 'last_name']
 
 
+# this is the complete order, in this order there are a lot of items.
 class Order(models.Model):
     PAYMENT_STATUS_PENDING = 'P'
     PAYMENT_STATUS_COMPLETE = 'C'
@@ -85,9 +86,11 @@ class Order(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.PROTECT)
 
 
+# this is a specific item in the order
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.PROTECT)
-    product = models.ForeignKey(Product, on_delete=models.PROTECT)
+    # if the referenced Product is attempted to be deleted, then check
+    product = models.ForeignKey(Product, on_delete=models.PROTECT, related_name="orderitems")
     quantity = models.PositiveSmallIntegerField()
     unit_price = models.DecimalField(max_digits=6, decimal_places=2)
 
