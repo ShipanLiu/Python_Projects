@@ -114,3 +114,28 @@ class CartItem(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveSmallIntegerField()
+
+
+
+
+# >>>>>>>here is new defined Models>>>>>>>>>>>>>>>>>>>>>
+
+
+# for example reviews from many customer of a product
+class Review(models.Model):
+    # if you delete a product, then all the reviews will be deleted
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="reviews")
+    name = models.CharField(max_length=255)
+    description = models.TextField(max_length=1000)
+    create_date = models.DateField(auto_now_add=True)
+    update_date = models.DateField(auto_now=True)
+
+    def __str__(self) ->str :
+        return f"Review with id: {self.id} + name: {self.name}"
+
+    # database name
+    class Meta:
+        db_table = "store_review"
+        # Order by "create_date" in descending order
+        ordering = ["-create_date"]
+

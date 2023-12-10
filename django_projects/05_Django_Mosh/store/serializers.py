@@ -2,7 +2,7 @@
 from decimal import Decimal
 
 from rest_framework import serializers
-from .models import Product, Collection
+from .models import Product, Collection, Review
 
 
 class CollectionSerializer(serializers.Serializer):
@@ -74,16 +74,16 @@ class ProductModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         # "unit_price" 被 “price” 取代, because you have defined the "price" field
-        fields = ["id", "title", "slug", "description", "unit_price", "inventory", "collection", "price_with_tax", "collection_obj", "collection_link"]
+        fields = ["id", "title", "slug", "description", "unit_price", "inventory", "collection", "price_with_tax"]
     # price = serializers.DecimalField(max_digits=6, decimal_places=2, source="unit_price") # 1234.56
     price_with_tax = serializers.SerializerMethodField(method_name="calculate_price_wit_tax", read_only=True)
-    collection_obj = CollectionSerializer(required=False, source="collection", read_only=True)
-    collection_link = serializers.HyperlinkedRelatedField(
-        queryset=Collection.objects.all(),
-        view_name = "collection-detail",
-        required=False,
-        source = "collection",
-    )
+    # collection_obj = CollectionSerializer(required=False, source="collection", read_only=True)
+    # collection_link = serializers.HyperlinkedRelatedField(
+    #     queryset=Collection.objects.all(),
+    #     view_name = "collection-detail",
+    #     required=False,
+    #     source = "collection",
+    # )
 
 
     # serialized_product is the product(model) that is serialized
@@ -134,17 +134,23 @@ class CollectionModelSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Collection
-        fields = ["id", "title", "featured_product", "products_count", "featured_product_obj"]
+        # in model "Collection", the field "featured_product" is a FK and can be NULL, so when doing a post request, it is not required.
+        fields = ["id", "title", "featured_product", "products_count"]
 
     # use ProductModelSerializer, show Product Object only when “GET” method
     # source="featured_product"，以featured_product 为 source， 来生成featured_product_obj。
-    featured_product_obj = ProductModelSerializer(read_only=True, source="featured_product")
+    # featured_product_obj = ProductModelSerializer(read_only=True, source="featured_product") # we only need the collection id
 
     # the Collection model does not have "products_count", so I need to define here.
-    # read_only  ==>  只用于从 database 里 rausholen
-    products_count = serializers.IntegerField(required=False, read_only=True)
+    # read_only  ==>  只用于从 database 里 rausholen, so you don't need to set "required=False"
+    products_count = serializers.IntegerField(read_only=True)
 
 
 
+# >>>>here is serializer class for review>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+class ReviewModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Review
+        fields = ["id", "product", "name", "description", "create_date", "update_date"]
 
 

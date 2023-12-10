@@ -1,13 +1,173 @@
+# aggregate function: count
+from django.db.models.aggregates import Count
 # 为了节省时间， 我们使用 django.shortcuts 里面的函数
-from django.db.models import Count
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse
 from rest_framework.decorators import api_view  # decorators
 from rest_framework.response import Response # this is response from rest framework, not from "django", 比 django的更加强大。
 from rest_framework import status  # status.HTTP_404_NOT_FOUND 等价于 404,  return Response(status=status.HTTP_404_NOT_FOUND)
 # 当前文件下的 models.py import a class
-from .models import Product, Collection
-from .serializers import ProductSerializer, CollectionSerializer, ProductModelSerializer, CollectionModelSerializer
+from .models import Product, Collection, OrderItem, Review
+from .serializers import ProductSerializer, CollectionSerializer, ProductModelSerializer, CollectionModelSerializer, ReviewModelSerializer
+
+# for class based view, APIView is the base class for all CBVs(class based views)
+from rest_framework.views import APIView
+# for example in "GET" method, we always write the same code so here mixin comes
+from rest_framework.mixins import ListModelMixin, CreateModelMixin
+# we won't use mixins directly but we use generics:
+# ListCreateAPIView has get() for listing  and post() for creating
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+# for "ProductList" and "ProductDetail" we have the same "queryset" and "serializer_class", so here we need to apply Viewset
+from rest_framework.viewsets import ModelViewSet # ModelViewSet combines listview(GET + POST) and detailview(GET+POST+DELETE)
+
+
+
+# >>>>>>>>>>>>>>>Class Based View>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+# 这个更牛逼，combine "ProductList" and "ProductDetail", "GET", "POST", "PUT", "DELETE" 都结合在一起了。
+# ModelViewSet contains all minxins and APIView
+class ProductViewSet(ModelViewSet):
+    queryset = Product.objects.all()
+    serializer_class = ProductModelSerializer
+
+    def get_serializer_context(self):
+        return {"request": self.request}
+
+    # overwrite the "destroy" method in "ModelViewSet.DestroyModelMixin"
+    # because in original "destroy()" the target_object(here target product) is collected
+    def destroy(self, request, *args, **kwargs):
+        if OrderItem.objects.filter(product_id=kwargs.get("pk")).count() > 0:
+            return Response({"error": "this product exist in an order, can not be deleted"},
+                            status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        return super().destroy(request, *args, **kwargs)
+
+
+class CollectionViewSet(ModelViewSet):
+    queryset = Collection.objects.annotate(products_count=Count("products")).all()
+    serializer_class = CollectionModelSerializer
+
+    def get_serializer_context(self):
+        return {"request": self.request}
+
+    def destroy(self, request, *args, **kwargs):
+        # I want del a collection, if the collection contains any products, then can not
+        if Product.objects.filter(collection=kwargs.get("pk")).count() > 0:
+            return Response({"error": "collection contains some products, can not be deleted"})
+        return super().destroy(request, *args, **kwargs)
+
+
+# ViewSet for Review=> this support GET, POST, PUT and DELETE
+class ReviewViewSet(ModelViewSet):
+    # write queryset
+    queryset = Review.objects.all()
+    # sLizer class
+    serializer_class = ReviewModelSerializer
+    # context parameter
+    def get_serializer_context(self):
+        return {"request": self.request}
+    # overwrite method for customed methods
+
+
+
+
+# class ProductList(ListCreateAPIView):
+#     # a more easy way to replace the "get_queryset()" and "get_serializer_class()" method
+#     queryset = Product.objects.all()
+#     serializer_class = ProductModelSerializer
+#
+#     # if you use generics "ListCreateAPIView", the only thing you need to overwrite 2 methods and provide "queryset" and "serilizer"
+#     # def get_queryset(self):
+#     #     return Product.objects.select_related("collection").all() # return the target queryset
+#     # def get_serializer_class(self):
+#     #     return ProductModelSerializer # return the target serilizer
+#     # the serilizer need context
+#     def get_serializer_context(self):
+#         return {"request": self.request}
+#
+#
+#
+#     # def get(self, request):
+#     #     queryset = Product.objects.select_related("collection").all()
+#     #     slizer = ProductModelSerializer(queryset, many=True, context={"request": request})
+#     #     dict = slizer.data
+#     #     return Response(dict)
+#     #
+#     # def post(self, request):
+#     #     dSlizer = ProductModelSerializer(data=request.data, context={"request": request})
+#     #     dSlizer.is_valid(raise_exception=True)
+#     #     print(dSlizer.validated_data)
+#     #     dSlizer.save()
+#     #     return Response(dSlizer.data, status=status.HTTP_201_CREATED)
+#
+# # support GET, PUT, DELETE, ==> http://127.0.0.1:8000/store/products/2
+# class ProductDetail(RetrieveUpdateDestroyAPIView):
+#     # here you provide the base queryset(all products, but not filter)
+#     queryset = Product.objects.all()
+#     serializer_class = ProductModelSerializer
+#
+#     # GET 和 PUT are all exected automaticlly
+#     # you need to overwrite the delete()" in "RetrieveUpdateDestroyAPIView" to realize customized logic
+#
+#
+#
+#     # def get(self, request, id):
+#     #     target_product = get_object_or_404(Product, pk=id)
+#     #     slizer = ProductModelSerializer(target_product, many=False, context={"request": request})
+#     #     dict = slizer.data
+#     #     return Response(dict)
+#     #
+#     # def put(self, request, id):
+#     #     target_product = get_object_or_404(Product, pk=id)
+#     #     slizer = ProductModelSerializer(target_product, data=request.data, context={"request": request})
+#     #     slizer.is_valid(raise_exception=True)
+#     #     slizer.save()
+#     #     return Response(slizer.data)
+#
+#     def delete(self, request, pk):
+#         target_product = get_object_or_404(Product, pk=pk)
+#         if target_product.orderitems.count() > 0:
+#             return Response({"error": "this product exist in an order, can not be deleted"},
+#                             status=status.HTTP_405_METHOD_NOT_ALLOWED)
+#         target_product.delete()
+#         return Response({"message": f"delete product with id: {id} in success"}, status=status.HTTP_204_NO_CONTENT)
+
+
+
+
+class CollectionList(ListCreateAPIView):
+    queryset = Collection.objects.annotate(products_count=Count("products")).all()
+    serializer_class = CollectionModelSerializer
+
+    # pass the "request" to the sLizer, because: when you need to access the request object inside your serializer for various purposes,
+    # such as generating hyperlinks or accessing user information.
+    # Regarding the request attribute, Django's class-based views are designed to handle web requests.
+
+    # request 是哪里来的？ When a request comes in, Django creates an instance of the view class and sets various attributes on it,
+    # including the request object. This request object contains all the information about the current HTTP request -
+    # -such as GET and POST data, headers, the authenticated user (if any), and so on.
+    def get_serializer_context(self):
+        return {"request": self.request}
+
+
+class CollectionDetail(RetrieveUpdateDestroyAPIView):
+    queryset = Collection.objects.annotate(products_count=Count("products")).all()
+    serializer_class = CollectionModelSerializer
+
+    # overwrite the "delete()" method in "RetrieveUpdateDestroyAPIView"
+    def delete(self, request, pk):
+        target_collection = get_object_or_404(Collection, pk=pk)
+        if target_collection.products.count() > 0:
+            return Response({"error": "collection contains some products, can not be deleted"})
+        target_collection.delete()
+        return Response({"message": f"target collection with id:{pk} and title:{target_collection.title} is deleted"})
+
+
+
+
+
+# >>>>>>>>>>>>>>>>>>>>>>>>>>function based view(we won;t use because too many if and else)>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
 
 
 # Create your views here.
