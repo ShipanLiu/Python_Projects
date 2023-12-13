@@ -20,6 +20,17 @@ from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIV
 # for "ProductList" and "ProductDetail" we have the same "queryset" and "serializer_class", so here we need to apply Viewset
 from rest_framework.viewsets import ModelViewSet # ModelViewSet combines listview(GET + POST) and detailview(GET+POST+DELETE)
 
+# if you want to flter the products with any parameters, then you need a generic filter,and here you need "django-filter"
+# DjangoFilterBackend gives us generic filtering
+from django_filters.rest_framework import DjangoFilterBackend
+from .filters import ProductFilter
+# now it is about searching ==> searching by some fields
+from rest_framework.filters import SearchFilter, OrderingFilter # 'SearchFilter' is for filtering,  'OrderingFilter' is for ordering
+# now about pagination
+from rest_framework.pagination import PageNumberPagination
+
+# DIY paginationclass
+from .pagination import DefaultPagination
 
 
 # >>>>>>>>>>>>>>>Class Based View>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -28,6 +39,23 @@ from rest_framework.viewsets import ModelViewSet # ModelViewSet combines listvie
 # ModelViewSet contains all minxins and APIView
 class ProductViewSet(ModelViewSet):
     queryset = Product.objects.all()
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    # filterset_fields = ["collection_id"]
+    filterset_class = ProductFilter
+    search_fields = ["title", "description"]
+    ordering_fields = ["unit_price", "last_update"]
+    # you can set the global pagination in settings.py
+    pagination_class = DefaultPagination # you don't need to in  "settings.py" and set the PAGE_SIZE, because DefaultPagination has included the page_size
+
+
+    # the filtering logic could be replaced by "DjangoFil"
+    # def get_queryset(self):
+    #     queryset = Product.objects.all()
+    #     collection_id = self.request.query_params.get("collection_id") # the get() method may give back a None
+    #     if collection_id is not None:
+    #         queryset = Product.objects.filter(collection_id=collection_id)
+    #     return queryset
+
     serializer_class = ProductModelSerializer
 
     def get_serializer_context(self):
@@ -58,13 +86,25 @@ class CollectionViewSet(ModelViewSet):
 
 # ViewSet for Review=> this support GET, POST, PUT and DELETE
 class ReviewViewSet(ModelViewSet):
-    # write queryset
-    queryset = Review.objects.all()
+    # get queryset(show all the reviews belongs to this product, here we need to have access to "self", so we overwrite the get_queryset method)
+    # queryset = Review.objects.all()
+    def get_queryset(self):
+        return Review.objects.filter(product_id=self.kwargs.get("product_pk"))
     # sLizer class
     serializer_class = ReviewModelSerializer
-    # context parameter
+    # context parameter,给 ReviewModelSerializer 传点东西。
     def get_serializer_context(self):
-        return {"request": self.request}
+        return {
+            "request": self.request,
+            # http://127.0.0.1:8000/store/products/1/reviews/1/,  "product_pk" is the first '1', the pk is the second '1'
+            # product_pk 对应 urls.py 里的 lookup="product", 会自动给你加上 '_pk'
+            # store/products/<int:product_pk>/reviews/<int:pk>/
+            # kwargs will be like: {
+            #     'product_pk': 1,
+            #     'pk': 1
+            # }
+            "product_id": self.kwargs.get("product_pk")
+        }
     # overwrite method for customed methods
 
 

@@ -127,10 +127,10 @@ class Review(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="reviews")
     name = models.CharField(max_length=255)
     description = models.TextField(max_length=1000)
-    create_date = models.DateField(auto_now_add=True)
-    update_date = models.DateField(auto_now=True)
+    create_date = models.DateField(auto_now_add=True, null=True)
+    update_date = models.DateField(auto_now=True, null=True)
 
-    def __str__(self) ->str :
+    def __str__(self) -> str :
         return f"Review with id: {self.id} + name: {self.name}"
 
     # database name

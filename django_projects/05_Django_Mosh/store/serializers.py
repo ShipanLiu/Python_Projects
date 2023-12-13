@@ -151,6 +151,34 @@ class CollectionModelSerializer(serializers.ModelSerializer):
 class ReviewModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
-        fields = ["id", "product", "name", "description", "create_date", "update_date"]
+        fields = ["id", "name", "description", "create_date", "update_date"]
+
+    # 一般POST 请求 create 一个 Review 的时候， the body will be like:
+    #     {"name": "customer 1",
+    #     "description": "this is a test review"
+    #     "product":1 }
+    # the post url will be http://127.0.0.1:8000/store/products/1/reviews/
+    # the post url will be store/products/<int:product_pk>/reviews/<int:pk>/
+    # but in the url, the product id is already included, so the new request body could be(without product):
+    #     {
+    #     "name": "customer 1",
+    #     "description": "this is a test review"
+    #     }
+    # and we can get the product_pk from the url
+    # now overwrite the create() method, the create method is for DIY logic before saving to database
+    def create(self, validated_data):
+        # create a new instance
+        product_id = self.context.get("product_id")
+
+        # 写法1
+        # new_review = Review(product_id=product_id, **validated_data)
+        # new_review.save()
+
+        # 写法2
+        new_review = Review.objects.create(product_id=product_id, **validated_data)
+
+        # return instance
+        return new_review
+
 
 

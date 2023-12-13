@@ -38,8 +38,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',# used for displaying one time notifications fo the user
     'django.contrib.staticfiles',# for serving static files
-    # restful frame work should be here
+    # restful framework should be here
     'rest_framework',
+    'django_filters',
 
     # my apps
     'playground',
@@ -86,6 +87,10 @@ WSGI_APPLICATION = 'project.wsgi.application'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 from . import secrets
+SSL_DIR = BASE_DIR / 'project' / 'mysql_ssl'
+ca_path = SSL_DIR / 'ca.pem'
+cert_path = SSL_DIR / 'client-cert.pem'
+key_path = SSL_DIR / 'client-key.pem'
 
 DATABASES = {
     'default': {
@@ -95,6 +100,14 @@ DATABASES = {
         'PASSWORD': secrets.DATABASE_PASSWORD,
         'HOST': secrets.DATABASE_HOST,   # Set to empty string for localhost.
         'PORT': secrets.DATABASE_PORT,            # Set to empty string for default.
+
+        'OPTIONS': {
+            'ssl': {
+                'ca': str(ca_path),
+                'cert': str(cert_path),
+                'key': str(key_path),
+            }
+        }
     }
 }
 
@@ -141,7 +154,12 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FtoFiIELD = 'django.db.models.BigAueld'
 
+
 # 比如"unit_price" 的值是decimal， 但是 传回来见的 json 是 string 格式，这里设置一下
 REST_FRAMEWORK= {
-    "COERCE_DECIMAL_TO_STRING": False
+    "COERCE_DECIMAL_TO_STRING": False,
+    # "PAGE_SIZE": 5,
+    # enable pagenation for all models
+    # "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination"
+
 }
