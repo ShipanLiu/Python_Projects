@@ -2,68 +2,8 @@
 from decimal import Decimal
 
 from rest_framework import serializers
-from .models import Product, Collection, Review
-
-
-class CollectionSerializer(serializers.Serializer):
-    id = serializers.IntegerField()
-    title = serializers.CharField(max_length=255)
-
-
-
-
-# serializer: convert "model instance" into "dictionary"
-class ProductSerializer(serializers.Serializer):
-    # you have to define, which attributes from tuple you want to serialize, 这样做的原因是
-    # 不会 expose your sensitive data to the outside world
-    # so here you have to define exactly like defining n model
-    # 因为之后， serializer 还要接受 frontend 传来的products，这里定义max_length=255 也为了得到valid Serializer
-    # the name of the attrivbutes here d't have to be the same as defined in Models
-    id = serializers.IntegerField()
-    title = serializers.CharField(max_length=255)
-    # here you don't have to use "unit_price" but you can just use "price",
-    # but using the same name as in models is good.
-    # if you use "price", you need to tell django which field in model to match
-    price = serializers.DecimalField(max_digits=6, decimal_places=2, source="unit_price") # 1234.56
-    # 这是自定一个的一个 key，
-    price_with_tax = serializers.SerializerMethodField(method_name="calculate_price_wit_tax")
-    # return the collection number: (这里的 collection field 是一个 foreign key)
-    # using the "PrimaryKeyRelatedField", the result will be a PK, a number
-    collection_nr = serializers.PrimaryKeyRelatedField(
-        queryset=Collection.objects.all(),
-        source="collection"
-    )
-    # this will use the " def __str__(self) -> str: return self.title" in Collection Model class
-    collection_name = serializers.StringRelatedField(source="collection", read_only=True)
-
-    # here the collection_obj will be an Obj {}
-    collection_obj = CollectionSerializer(source="collection", read_only=True)
-
-    # we create a hyperlink for the collection
-    # view_name="collection-detail" is the url name in urls.py ==>  path("collections/<int:id>", views.collection_detail, name="collection-detail")
-    # in view you need to add: context={"request": request} to the serilizer
-    collection_link = serializers.HyperlinkedRelatedField(
-        queryset=Collection.objects.all(),
-        view_name="collection-detail",
-        source="collection",
-    )
-
-
-    # serialized_product is the product(model) that is serialized
-    def calculate_price_wit_tax(self, serialized_product: Product):
-        # attention: "Decimal" can NOT multiply "float number"
-        return serialized_product.unit_price * Decimal(1.1)
-
-
-
-
-
-
+from .models import Product, Collection, Review, Cart, CartItem, Order, OrderItem
 #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<use ModelSerilizer<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
-
-
-
 
 
 
@@ -75,15 +15,7 @@ class ProductModelSerializer(serializers.ModelSerializer):
         model = Product
         # "unit_price" 被 “price” 取代, because you have defined the "price" field
         fields = ["id", "title", "slug", "description", "unit_price", "inventory", "collection", "price_with_tax"]
-    # price = serializers.DecimalField(max_digits=6, decimal_places=2, source="unit_price") # 1234.56
     price_with_tax = serializers.SerializerMethodField(method_name="calculate_price_wit_tax", read_only=True)
-    # collection_obj = CollectionSerializer(required=False, source="collection", read_only=True)
-    # collection_link = serializers.HyperlinkedRelatedField(
-    #     queryset=Collection.objects.all(),
-    #     view_name = "collection-detail",
-    #     required=False,
-    #     source = "collection",
-    # )
 
 
     # serialized_product is the product(model) that is serialized
@@ -93,56 +25,12 @@ class ProductModelSerializer(serializers.ModelSerializer):
         # result是 Decimal格式，rounded to 2 decimal places
         return round(result, 2)
 
-    # here override the create method, for creating a new tuple in th edatabase, it is responsible for creating new instances of a model based on the validated data
-    # create() is called after calling save() in the views.py
-    # def create(self, validated_data):
-    #     #create a new Object, take the validated_data dictionairy, the **validated_data syntax unpacks the dictionary, passing the key-value pairs as arguments to the Product model constructor
-    #     newProduct = Product(**validated_data)
-    #     # set a special field, useful for setting default values or adding data that is not provided by the API user but is required by the application's logic.
-    #     newProduct.other = 1
-    #     newProduct.save()
-    #     return newProduct
-
-
-    # updaing a product, override the basic method in serilizer:
-    # def update(self, instance, validated_data):
-    #     # for example if you want to update "unit_price"
-    #     instance.unit_price = validated_data.get("unit_price")
-    #     instance.save()
-    #     return instance
-
-
-
-
-    # define data validate rules(here override the validate method from serializers)
-    # def validate(self, data):
-    #     # pwd consistency
-    #     if data["password"] != data["confirm_password"]:
-    #         return serializers.ValidationError("password and confirm_password do not match")
-    #     # if all right, then return the data
-    #     return data
-
-
-# 这样 POST request 可以为：-> http://127.0.0.1:8000/store/collections/
-# {
-#     "title": "test collection",
-#     "featured_product": 200
-# }
-# 注意： featured_product 只用给 integer（primary key）就行了，这是默认的.
 
 class CollectionModelSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Collection
-        # in model "Collection", the field "featured_product" is a FK and can be NULL, so when doing a post request, it is not required.
         fields = ["id", "title", "featured_product", "products_count"]
-
-    # use ProductModelSerializer, show Product Object only when “GET” method
-    # source="featured_product"，以featured_product 为 source， 来生成featured_product_obj。
-    # featured_product_obj = ProductModelSerializer(read_only=True, source="featured_product") # we only need the collection id
-
-    # the Collection model does not have "products_count", so I need to define here.
-    # read_only  ==>  只用于从 database 里 rausholen, so you don't need to set "required=False"
     products_count = serializers.IntegerField(read_only=True)
 
 
@@ -152,33 +40,111 @@ class ReviewModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
         fields = ["id", "name", "description", "create_date", "update_date"]
-
-    # 一般POST 请求 create 一个 Review 的时候， the body will be like:
-    #     {"name": "customer 1",
-    #     "description": "this is a test review"
-    #     "product":1 }
-    # the post url will be http://127.0.0.1:8000/store/products/1/reviews/
-    # the post url will be store/products/<int:product_pk>/reviews/<int:pk>/
-    # but in the url, the product id is already included, so the new request body could be(without product):
-    #     {
-    #     "name": "customer 1",
-    #     "description": "this is a test review"
-    #     }
-    # and we can get the product_pk from the url
-    # now overwrite the create() method, the create method is for DIY logic before saving to database
     def create(self, validated_data):
         # create a new instance
         product_id = self.context.get("product_id")
-
-        # 写法1
-        # new_review = Review(product_id=product_id, **validated_data)
-        # new_review.save()
-
         # 写法2
         new_review = Review.objects.create(product_id=product_id, **validated_data)
-
         # return instance
         return new_review
+
+
+
+class SimpleProductModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = ["id", "title", "unit_price"]
+
+
+# >>>>> CartItemModelSerializer
+# 可以应对 get, put/patch, delete
+class CartItemModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model =  CartItem
+        fields = ["id", "product", "quantity", "cart_item_total_price"]
+
+    # we want to get the ProductObj(简化版)
+    product = SimpleProductModelSerializer(read_only=True)
+    cart_item_total_price = serializers.SerializerMethodField(read_only=True)
+
+    def get_cart_item_total_price(self, single_cart_item:CartItem):
+        return single_cart_item.product.unit_price * single_cart_item.quantity
+
+    # for GET, PUT, PATCH, DELETE, you don;t need to do anything additional
+
+
+# 之所以单独创建这个Serilizer 是因为要应对 create 要在post body 里面写  product_id,  而不是写product object
+class CreateCartItemModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CartItem
+        # fields = ["id", "product", "quantity"]
+        fields = ["id", "product_id", "quantity"] #假如你非要写成product_id 的话，then you need to redefine it.
+    product_id = serializers.IntegerField()
+
+    # create a CartItem in "http://127.0.0.1:8000/store/carts/d0c9caf5714e4c1ea3ee65363a160672/items/1/"  ==> you need use the "cart_id" in the context passed from views.py
+    #def create(self, validated_data):
+        # get cart_id
+        # cart_id = self.context.get("cart_id")
+        # create a new CartItem using CartItem.objects.create(), you can not create this way, 如果body里你给的 product id 不存在呢？
+        # new_cart_item = CartItem.objects.create(cart_id=cart_id, **validated_data)
+
+    # validate the product_id, 注意命名规则。
+    def validate_product_id(self, value):
+        if not Product.objects.filter(pk=value).exists():
+            raise serializers.ValidationError(f"no product with id {value} exist ")
+        return value
+
+
+    #  the default create() and update() method form ModelSerializer will call save() at the end
+    # so it's better to controll the save() method so that we won't rewrite 2 methods "create()" + "update()"
+    # here we don't want the same item be saved twice
+    def save(self, **kwargs):
+        # get cart_id
+        cart_id = self.context.get("cart_id")
+        # get product_id
+        product_id = self.validated_data.get("product_id")
+        # get quantity
+        quantity = self.validated_data.get("quantity")
+
+        try:
+            cart_item = CartItem.objects.get(cart_id=cart_id, product_id=product_id)
+            # now update an existing item
+            cart_item.quantity += quantity
+            cart_item.save()
+            self.instance = cart_item
+        except CartItem.DoesNotExist:
+            # now create an item
+            self.instance = CartItem.objects.create(cart_id=cart_id, **self.validated_data)
+        return self.instance
+
+
+# we only want to update the quantity using "PATCH"
+class UpdateCartItemModelSerializer(serializers.ModelSerializer):
+    # update is not like create, we don't need the "cart_id" or "product_id"
+    class Meta:
+        model = CartItem
+        fields = ["quantity"]
+
+
+
+# >>>>> CartModelSerializer
+class CartModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Cart
+        # fields = ["id", "created_at"]
+        fields = ["id", "items", "cart_total_price"]
+
+    id = serializers.UUIDField(read_only=True)
+    # list the CartItemObj
+    items= CartItemModelSerializer(many=True, read_only=True)
+
+    cart_total_price = serializers.SerializerMethodField()
+
+    def get_cart_total_price(self, cart:Cart):
+        return sum([item.quantity * item.product.unit_price for item in cart.items.all()])
+
+
+
 
 
 

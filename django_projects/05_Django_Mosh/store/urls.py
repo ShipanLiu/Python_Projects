@@ -52,11 +52,17 @@ router = routers.DefaultRouter()
 # this means: ProductViewSet is responsiable for all products related endpoints.
 router.register("products", views.ProductViewSet, basename="products") # based on the "basename" 最终名字可能是 "product-list" or "product_details"
 router.register("collections", views.CollectionViewSet, basename="collections")
+router.register("carts", views.CartViewSet, basename="carts")
+
+
+# start implement nested router
 
 # (parent-router, parent-prefix, lookup="product", this mean we are gonna to have a "product_pk"
 products_router = routers.NestedDefaultRouter(router, "products", lookup="product")
+carts_router = routers.NestedDefaultRouter(router, "carts", lookup="cart") # "carts" ---自动生成--->  carts_pk
 # register child, basename 讲解见上面
 products_router.register("reviews", views.ReviewViewSet, basename="product-reviews")
+carts_router.register("items", views.CartItemViewSet, basename="carts-items") #the drf will create for us 2 route based on the basename: "carts-items-datail", "carts-items-list"
 
 
 
@@ -70,7 +76,11 @@ products_router.register("reviews", views.ReviewViewSet, basename="product-revie
 #  <URLPattern '^collections/$' [name='collection-list']>,
 #  <URLPattern '^collections/(?P<pk>[^/.]+)/$' [name='collection-detail']>]
 
-urlpatterns = router.urls + products_router.urls
+urlpatterns = [
+    path(r"", include(router.urls)),
+    path(r"", include(products_router.urls)),
+    path(r"", include(carts_router.urls)),
+]
 
 #URLConf
 # urlpatterns = [
