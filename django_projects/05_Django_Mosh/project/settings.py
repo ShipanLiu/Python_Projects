@@ -46,9 +46,10 @@ INSTALLED_APPS = [
     'playground',
     'debug_toolbar',  # for django-debug-toolbar
     'store',
-    'store_custom',
+
     'tags',
-    'likes'
+    'likes',
+    'core',
 ]
 
 MIDDLEWARE = [
@@ -163,3 +164,6 @@ REST_FRAMEWORK= {
     # "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination"
 
 }
+
+# define a self-defined User(but we defined this too late, we should define it before starting the Project)
+AUTH_USER_MODEL = "core.User"
