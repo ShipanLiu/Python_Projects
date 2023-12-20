@@ -1,37 +1,3 @@
-"""
-
->>>>>explain ‘basename="product-reviews"’
-With basename='product-reviews': By specifying this basename, the URL names for the viewset's actions will be prefixed with 'domain-nameservers'.
-For example:
-The URL name for the list action will be product-reviews-list.
-The URL name for the detail action will be product-reviews-detail.
-
-from django.urls import reverse
-# Reverse matching a list action
-url = reverse('domain-nameservers-list')  就是给 url 起一个名字， basename is used to generate our url patterns
-
-
-supported urls;
-
->>products
-
-http://127.0.0.1:8000/store/products
-http://127.0.0.1:8000/store/products/1
-http://127.0.0.1:8000/store/products/1/reviews/
-http://127.0.0.1:8000/store/products/1/reviews/1
-
->>collections
-http://127.0.0.1:8000/store/collections
-http://127.0.0.1:8000/store/collections/1
-
->>products filtering
-http://127.0.0.1:8000/store/products?collection_id=1
->>search&filtering(use django_filters)
-http://127.0.0.1:8000/store/products/?collection_id=4&unit_price__lt=100&unit_price__gt=90
->>ordering
-http://127.0.0.1:8000/store/products/?search=Coffee&ordering=-unit_price&last_update
-
-"""
 
 
 from django.urls import path, include
@@ -53,7 +19,8 @@ router = routers.DefaultRouter()
 router.register("products", views.ProductViewSet, basename="products") # based on the "basename" 最终名字可能是 "product-list" or "product_details"
 router.register("collections", views.CollectionViewSet, basename="collections")
 router.register("carts", views.CartViewSet, basename="carts")
-
+# add endpoints for customer (这里不需要nested router), after add this, then go to "" and you can find a ned endpoint is added
+router.register("customers", views.CustomerViewSet, basename="customers")
 
 # start implement nested router
 

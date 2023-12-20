@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -40,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',# for serving static files
     # restful framework should be here
     'rest_framework',
+    'djoser',
     'django_filters',
 
     # my apps
@@ -58,6 +60,8 @@ MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+    # inspect the incomming request and if there is information about user,
+    # it will retrieve that user from the database and attach it to the request object
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -116,7 +120,7 @@ DATABASES = {
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
-
+# the prerequisites of the password
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -126,9 +130,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
     {
         'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
 
@@ -163,7 +164,32 @@ REST_FRAMEWORK= {
     # enable pagenation for all models
     # "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination"
 
+    # https://djoser.readthedocs.io/en/latest/authentication_backends.html#json-web-token-authentication
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+
+
 }
+
 
 # define a self-defined User(but we defined this too late, we should define it before starting the Project)
 AUTH_USER_MODEL = "core.User"
+
+# for handling the customized serilizers in DJOSER
+DJOSER = {
+    "SERIALIZERS": {
+        "user_create": "core.serializers.UserCreateSerializer",
+        "current_user": "core.serializers.UserSerializer"
+    }
+}
+
+# for authentication, change the token time(不想那么快 login 失效)
+# Ein JWT besteht typischerweise aus drei Teilen, die durch Punkte voneinander getrennt sind: Header,
+# Payload und Signature. Also sieht ein JWT so aus: xxxxx.yyyyy.zzzzz.
+# Header: Der Header enthält typischerweise zwei Teile: den Typ des Tokens, der JWT ist,
+# und den verwendeten Hashing-Algorithmus, wie zum Beispiel HMAC SHA256 oder RSA.
+SIMPLE_JWT = {
+    'AUTH_HEADER_TYPES': ('JWT',),
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
+}

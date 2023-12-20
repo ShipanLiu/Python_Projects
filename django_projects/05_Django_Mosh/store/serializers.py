@@ -2,7 +2,10 @@
 from decimal import Decimal
 
 from rest_framework import serializers
-from .models import Product, Collection, Review, Cart, CartItem, Order, OrderItem
+from .models import (Product, Collection,
+                     Review, Cart, CartItem,
+                     Order, OrderItem,
+                     Customer)
 #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<use ModelSerilizer<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 
@@ -145,6 +148,22 @@ class CartModelSerializer(serializers.ModelSerializer):
 
 
 
+# Customized SLizer for Customer
+class CustomerModalSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Customer
+        # fields = ["id", "user", "phone", "birth_date", "membership"]
+        fields = ["id", "user_id", "phone", "birth_date", "membership"]
+
+    # if you want to use field "user_id", then you need really to create this filed on fly
+    user_id = serializers.IntegerField()
 
 
+class PutCustomerModalSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Customer
+        # fields = ["id", "user", "phone", "birth_date", "membership"]
+        fields = ["id", "user_id", "phone", "birth_date", "membership"]
 
+    # if you want to use field "user_id", then you need really to create this filed on fly
+    user_id = serializers.IntegerField(read_only=True)
