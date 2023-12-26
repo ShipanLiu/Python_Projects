@@ -12,7 +12,11 @@ from .serializers import (ProductModelSerializer, CollectionModelSerializer,
                           ReviewModelSerializer, CartModelSerializer,
                           CartItemModelSerializer, CreateCartItemModelSerializer,
                           UpdateCartItemModelSerializer,
-                          CustomerModalSerializer, PutCustomerModalSerializer)
+                          CustomerModalSerializer, PutCustomerModalSerializer,
+                          OrderModalSerializer, OrderItemModalSerializer)
+
+# here self defined Permission
+from .permissions import IsAdminOrReadOnly
 
 # for class based view, APIView is the base class for all CBVs(class based views)
 from rest_framework.views import APIView
@@ -37,11 +41,15 @@ from rest_framework.pagination import PageNumberPagination
 from .pagination import DefaultPagination
 
 # if you don't want to use "ModelViewSet", you can create your own "MyViewSet"
-from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin, DestroyModelMixin, UpdateModelMixin
+from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin, DestroyModelMixin, UpdateModelMixin, ListModelMixin
 from rest_framework.viewsets import GenericViewSet
 
 # dectorator:
 from rest_framework.decorators import action
+
+# here is the permissions
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser, DjangoModelPermissions
+
 
 
 
@@ -62,6 +70,10 @@ class ProductViewSet(ModelViewSet):
 
     serializer_class = ProductModelSerializer
 
+    # add self defined permissio class:
+    # permission_classes = [IsAdminOrReadOnly]
+    # permission_classes = [DjangoModelPermissions] # if you(the current user) are in some group, it depends which rights do you have.
+
     def get_serializer_context(self):
         return {"request": self.request}
 
@@ -77,6 +89,8 @@ class ProductViewSet(ModelViewSet):
 class CollectionViewSet(ModelViewSet):
     queryset = Collection.objects.annotate(products_count=Count("products")).all()
     serializer_class = CollectionModelSerializer
+    # add self defined permissio class:
+    # permission_classes = [IsAdminOrReadOnly]
 
     def get_serializer_context(self):
         return {"request": self.request}
@@ -124,8 +138,8 @@ class MyBaseCartModelSet(RetrieveModelMixin, CreateModelMixin, DestroyModelMixin
 class CartViewSet(MyBaseCartModelSet):
     # queryset
     def get_queryset(self):
-        # prefetch_related: use it when a cart man have multiple items, use "prefetch_related"
-        # select_related: for foreignkeys where we have a single related object, use "select_related"
+        # prefetch_related: use it when a cart man have multiple items(related_names一方), use "prefetch_related"
+        # select_related: for foreignkeys/one2one where we have a single related object, use "select_related"
         # the "items" is related_name
         return Cart.objects.prefetch_related("items__product").all()  # '__product' means we also wat to preload the "product" in "items"
     # serilizer class
@@ -170,7 +184,7 @@ class CartItemViewSet(ModelViewSet):
         }
 
 
-class BaseCustomerViewSet(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, DestroyModelMixin, GenericViewSet):
+class BaseCustomerViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, DestroyModelMixin, GenericViewSet):
     pass
 
 
@@ -183,6 +197,21 @@ class CustomerViewSet(BaseCustomerViewSet):
         return Customer.objects.all()
     # serilizer
     serializer_class = CustomerModalSerializer
+
+    #permissions, so all actions in this viewset are closed for anonymous users
+    # permission_classes = [IsAuthenticated]
+    # anyone(who has logged in) can check customers, but can not upodate them
+    # def get_permissions(self):
+    #     # http://127.0.0.1:8000/store/customers/1/
+    #     if self.request.method == "GET":
+    #         # return [IsAuthenticated()]
+    #         return [AllowAny()]
+    #     # update Customer 时候 需要 auth
+    #     return [IsAuthenticated()]
+    # only the admin can access the /store/customer.
+    # if one newly via "http://127.0.0.1:8001/auth/users/" created user, if you don;t check the "staff status" in "http://127.0.0.1:8001/admin". then it is not admin
+    permission_classes = [IsAdminUser] # if I am a admin, I can view all the customers. (is admin = autheticated + the staff status is checked in admin page)
+
     # pas ocntext
     def get_serializer_context(self):
         return {
@@ -193,10 +222,16 @@ class CustomerViewSet(BaseCustomerViewSet):
     # @action(detail=False) means this "me" action is based on List : like "http://127.0.0.1:8000/store/customers/me/"
     # @action(detail=True) means this "me" action is based on Detail : like "http://127.0.0.1:8000/store/customers/1/me/"
     # 访问: http://127.0.0.1:8000/store/customers/me/, 后面的 me 就是 Teil von URL
-    @action(detail=False, methods=['GET', 'PUT'])
+    # here overwrite the permisson before, each one can view your profile, but can not edit.
+    # each authenticated customer can GET and PUT his own profile
+    @action(detail=False, methods=['GET', 'PUT'], permission_classes=[IsAuthenticated])
     def me(self, request):
         # get the customer with request.user.id(don't use filter, filter returns a list)
         # if the customer can not be found, then create a new customer and assocated it with the user_id
+        # if you haven't logged in,then you don't have request.user.id
+        # if user does not even exist, then the request.user = AnonymousUser
+        if not request.user.id:
+            return Response("you need to login first, and send me request with your access-token", status=status.HTTP_401_UNAUTHORIZED)
         (customer, created) = Customer.objects.get_or_create(user_id=request.user.id)
         if request.method == "GET":
             # create slizer based on the Database instance
@@ -212,3 +247,47 @@ class CustomerViewSet(BaseCustomerViewSet):
             dSlizer.save()
             # return
             return Response(dSlizer.data)
+
+
+
+# ViewSet for Order
+# GET -> list Orders
+# POST -> create Order
+# GET -> view an Order
+# UPDATE -> update a Order
+# DELETE -> delete a Order
+class OrderViewSet(ModelViewSet):
+    # only authenticated user can view
+    permission_classes = [IsAuthenticated]
+
+    # authenticated user can only view his/her own Order
+    def get_queryset(self):
+        # if the user is admin(like staff in the it company), then show all the Orders
+        if self.request.user.is_staff:
+            return Order.objects.select_related("customer").all()
+        # first, get customer id
+        # BAD! this violates "command or query principle"
+        c_id = Customer.objects.only("id").get_or_create(user_id=self.request.user.id)
+        return Order.objects.select_related("customer").filter(customer_id=c_id)
+
+    # sLizer class
+    serializer_class = OrderModalSerializer
+    # pass context to sLizer
+    def get_serializer_context(self):
+        return {
+            "request": self.request
+        }
+    # nested actions
+
+
+class OrderItemViewSet(ModelViewSet):
+    # queryset
+    queryset = OrderItem.objects.select_related("order", "product").all()
+    # sLizer class
+    serializer_class = OrderItemModalSerializer
+    # pass context to sLizer
+    def get_serializer_context(self):
+        return {
+            "request": self.request
+        }
+    # nested actions

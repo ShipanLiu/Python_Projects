@@ -118,12 +118,21 @@ class Order(models.Model):
 
 
 # this is a specific item in the order
+# 1 OrderItem is a just a Product, and here field "product" is a FK, and it points to Product
+# Product 是 1， OrderItem 是 多。
 class OrderItem(models.Model):
-    order = models.ForeignKey(Order, on_delete=models.PROTECT)
+    order = models.ForeignKey(Order, on_delete=models.PROTECT, related_name="orderitems")
     # if the referenced Product is attempted to be deleted, then check
     product = models.ForeignKey(Product, on_delete=models.PROTECT, related_name="orderitems")
     quantity = models.PositiveSmallIntegerField()
-    unit_price = models.DecimalField(max_digits=6, decimal_places=2)
+    order_item_total_price = models.DecimalField(max_digits=6, decimal_places=2)
+
+    # order_item_total_price need to be calculated before saving into the table
+    def save(self, *args, **kwargs):
+        # if the passed "order_item_total_price" has null value
+        if not self.order_item_total_price:
+            self.order_item_total_price = self.product.unit_price * self.quantity
+        super().save(*args, **kwargs)
 
 
 class Address(models.Model):
@@ -142,6 +151,7 @@ class Cart(models.Model):
 
 class CartItem(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="items")
+    # this cartitem is actually which product
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveSmallIntegerField(validators=[MinValueValidator(1)])
 

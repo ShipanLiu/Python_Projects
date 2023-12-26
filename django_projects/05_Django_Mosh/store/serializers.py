@@ -153,10 +153,16 @@ class CustomerModalSerializer(serializers.ModelSerializer):
     class Meta:
         model = Customer
         # fields = ["id", "user", "phone", "birth_date", "membership"]
-        fields = ["id", "user_id", "phone", "birth_date", "membership"]
+        fields = ["id", "user_id", "username", "phone", "birth_date", "membership"]
 
     # if you want to use field "user_id", then you need really to create this filed on fly
     user_id = serializers.IntegerField()
+
+    # show the username eachtime
+    username = serializers.SerializerMethodField(read_only=True)
+
+    def get_username(self, customer: Customer):
+        return customer.user.username
 
 
 class PutCustomerModalSerializer(serializers.ModelSerializer):
@@ -167,3 +173,32 @@ class PutCustomerModalSerializer(serializers.ModelSerializer):
 
     # if you want to use field "user_id", then you need really to create this filed on fly
     user_id = serializers.IntegerField(read_only=True)
+
+
+
+
+# OrderItem Serializer
+class OrderItemModalSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrderItem
+        fields = ["id", "order", "product_id", "product", "quantity", "order_item_total_price"]
+        read_only_fields = ["order_item_total_price"]
+    product_id = serializers.IntegerField()
+    product = SimpleProductModelSerializer(read_only=True)
+
+
+
+# Order Serializer
+class OrderModalSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Order
+        fields = ["id", "customer_id", "customer_username", "placed_at", "payment_status", "orderitems"]
+
+
+    customer_id = serializers.IntegerField()
+    customer_username = serializers.SerializerMethodField(read_only=True)
+    orderitems = OrderItemModalSerializer(many=True, read_only=True)
+
+    def get_customer_username(self, order:Order):
+        return order.customer.user.username
+

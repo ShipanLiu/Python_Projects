@@ -169,7 +169,9 @@ REST_FRAMEWORK= {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
 
-
+    # 'DEFAULT_PERMISSION_CLASSES': [
+    #     'rest_framework.permissions.IsAuthenticated'
+    # ]
 }
 
 
@@ -191,5 +193,5 @@ DJOSER = {
 # und den verwendeten Hashing-Algorithmus, wie zum Beispiel HMAC SHA256 oder RSA.
 SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('JWT',),
-    "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=300),
 }

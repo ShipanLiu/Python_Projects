@@ -38,7 +38,7 @@ http://127.0.0.1:8000/store/products/?search=Coffee&ordering=-unit_price&last_up
 >>customer(create / update)
 "http://127.0.0.1:8001/store/customers/"
 
->>authentication(jwt):
+>>authentication(jwt) --> user login and retuen back access-token
 http://127.0.0.1:8000/auth/jwt/create
 
 >> after successfully logined in, you want to retrieve the profile(in the header add the JWT header, 注意JWT 之后又一个空格)

@@ -21,6 +21,8 @@ router.register("collections", views.CollectionViewSet, basename="collections")
 router.register("carts", views.CartViewSet, basename="carts")
 # add endpoints for customer (这里不需要nested router), after add this, then go to "" and you can find a ned endpoint is added
 router.register("customers", views.CustomerViewSet, basename="customers")
+router.register("orders", views.OrderViewSet, basename="orders")
+router.register("order-items", views.OrderItemViewSet, basename="orders-items")
 
 # start implement nested router
 
