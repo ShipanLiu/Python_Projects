@@ -1,12 +1,35 @@
 # convert a float to decimal
 from decimal import Decimal
+from django.db import transaction
+
 
 from rest_framework import serializers
 from .models import (Product, Collection,
                      Review, Cart, CartItem,
                      Order, OrderItem,
-                     Customer)
+                     Customer, ProductImage)
+
+# here we need to inport our signals:
+from .signals import order_created_signal
 #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<use ModelSerilizer<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+class ProductImageModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductImage
+        # the url: products/1(product_pk)/images/1(pk), here we use the product_id from the nedted router,
+        # but still I will provide the product id here
+        fields = ["id", "product_id", "image"]
+    # this is read only, for uploading the images, we use the pro duct_id in the nested router
+    product_id = serializers.IntegerField(read_only=True)
+
+    # overwrite the "create()" method and get the product_id from the context:
+    def create(self, validated_data):
+        # get product_id from context
+        product_id = self.context.get("product_id")
+        # create image instance
+        productImage = ProductImage.objects.create(product_id=product_id, **validated_data)
+        # retuen
+        return productImage
 
 
 
@@ -17,9 +40,9 @@ class ProductModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         # "unit_price" 被 “price” 取代, because you have defined the "price" field
-        fields = ["id", "title", "slug", "description", "unit_price", "inventory", "collection", "price_with_tax"]
+        fields = ["id", "title", "slug", "description", "unit_price", "inventory", "collection", "price_with_tax", "images"]
     price_with_tax = serializers.SerializerMethodField(method_name="calculate_price_wit_tax", read_only=True)
-
+    images = ProductImageModelSerializer(many=True, read_only=True)
 
     # serialized_product is the product(model) that is serialized
     def calculate_price_wit_tax(self, serialized_product: Product):
@@ -64,10 +87,11 @@ class SimpleProductModelSerializer(serializers.ModelSerializer):
 class CartItemModelSerializer(serializers.ModelSerializer):
     class Meta:
         model =  CartItem
-        fields = ["id", "product", "quantity", "cart_item_total_price"]
+        fields = ["id", "product_id", "product", "quantity", "cart_item_total_price"]
 
     # we want to get the ProductObj(简化版)
     product = SimpleProductModelSerializer(read_only=True)
+    product_id = serializers.IntegerField()
     cart_item_total_price = serializers.SerializerMethodField(read_only=True)
 
     def get_cart_item_total_price(self, single_cart_item:CartItem):
@@ -101,6 +125,27 @@ class CreateCartItemModelSerializer(serializers.ModelSerializer):
     #  the default create() and update() method form ModelSerializer will call save() at the end
     # so it's better to controll the save() method so that we won't rewrite 2 methods "create()" + "update()"
     # here we don't want the same item be saved twice
+    """
+    validated_data:
+    
+    {
+        "id": 1,
+        "product_id": 20,
+        "product": {
+            "id": 20,
+            "title": "Cheese - Parmesan Cubes",
+            "unit_price": 32.94
+        },
+        "quantity": 6,
+        "cart_item_total_price": 197.64
+    }
+    
+    in Django REST Framework (DRF) bezieht sich validated_data auf die Daten,
+     die bereits durch den Serializer validiert wurden und die in der Regel 
+     aus dem Request-Body stammen.
+    
+    
+    """
     def save(self, **kwargs):
         # get cart_id
         cart_id = self.context.get("cart_id")
@@ -135,9 +180,10 @@ class CartModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Cart
         # fields = ["id", "created_at"]
-        fields = ["id", "items", "cart_total_price"]
+        fields = ["id", "items", "customer_id", "cart_total_price"]
 
     id = serializers.UUIDField(read_only=True)
+    customer_id = serializers.IntegerField()
     # list the CartItemObj
     items= CartItemModelSerializer(many=True, read_only=True)
 
@@ -185,6 +231,10 @@ class OrderItemModalSerializer(serializers.ModelSerializer):
         read_only_fields = ["order_item_total_price"]
     product_id = serializers.IntegerField()
     product = SimpleProductModelSerializer(read_only=True)
+    order_item_total_price = serializers.SerializerMethodField(read_only=True)
+
+    def get_order_item_total_price(self, orderitem: OrderItem):
+        return orderitem.product.unit_price * orderitem.quantity
 
 
 
@@ -199,6 +249,96 @@ class OrderModalSerializer(serializers.ModelSerializer):
     customer_username = serializers.SerializerMethodField(read_only=True)
     orderitems = OrderItemModalSerializer(many=True, read_only=True)
 
+
     def get_customer_username(self, order:Order):
         return order.customer.user.username
+
+
+# if you create an Order, the only thing you need to do is to return an Cart, and
+# here you don't need any fields from Order Table, but just you want a Cart id, so we don;t use ModelSerilizer, but normal Serilizer
+"""
+    {
+        "id": 1,
+        "product_id": 20,
+        "product": {
+            "id": 20,
+            "title": "Cheese - Parmesan Cubes",
+            "unit_price": 32.94
+        },
+        "quantity": 6,
+        "cart_item_total_price": 197.64
+    }
+    
+    in Django REST Framework (DRF) bezieht sich validated_data auf die Daten,
+    die bereits durch den Serializer validiert wurden und die in der Regel 
+    aus dem Request-Body stammen.
+
+
+"""
+class CreateOrderNormalSerializer(serializers.Serializer):
+    cart_id = serializers.UUIDField()
+
+    # I want to validate this "cart_id" , 注意命名规则
+    def validate_cart_id(self, cart_id):
+        # if the cart uuid is not valid/does not exist
+        if not Cart.objects.filter(pk=cart_id).exists():
+            raise serializers.ValidationError("no cart with the given id found")
+        # if the cart items array is empty:
+        if CartItem.objects.filter(cart_id=cart_id).count() == 0:
+            raise serializers.ValidationError("cart can not be empty")
+        return cart_id
+
+    # do the DIY logic inside of saving
+    def save(self, **kwargs):
+        # use transaction:
+        with transaction.atomic():
+            # 前提在 request_body 你需要有 "cart_id"
+            cart_id = self.validated_data.get("cart_id")
+            user_id = self.context.get("user_id")
+
+            # create an Order, we need "customer_id", this can be via "user" or via "cart", both of them contains customer
+            # get customer_id from "cart"
+            cart = Cart.objects.get(pk=cart_id)
+
+            # you don't need to save any more, because create() will save to database
+            order = Order.objects.create(customer_id=cart.customer_id)
+
+            # now create order-items through cart-items
+            # get query set
+            cart_items_queryset = CartItem.objects.select_related("product").filter(cart_id=cart_id)
+            # create OrderItem
+            order_items = [
+                OrderItem(
+                    order_id = order.id,
+                    product_id = item.product.id,
+                    quantity = item.quantity
+                ) for item in cart_items_queryset
+            ]
+
+            # save the orderitems into database
+            OrderItem.objects.bulk_create(order_items)
+
+            # and then you need to delete the Cart
+            Cart.objects.filter(pk=cart_id).delete()
+
+            # here we need to fire our signals:
+            # pass the sender = self.__class__(this is the current instance class)
+            # pass extra data "order"
+            # the handler of this signal is in "core" app
+            order_created_signal.send_robust(self.__class__, order=order)
+
+            # return order Obj
+            return order
+
+
+class UpdateOrderModalSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Order
+        fields = ["payment_status"]
+
+
+
+
+
+
 

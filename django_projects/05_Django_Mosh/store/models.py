@@ -1,9 +1,11 @@
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, FileExtensionValidator
 from django.db import models
 from django.conf import settings
 from django.contrib import admin
 
 from uuid import uuid4
+
+from .validators import simgle_image_size_vsalidator
 
 
 class Promotion(models.Model):
@@ -50,6 +52,18 @@ class Product(models.Model):
 
     class Meta:
         ordering = ['title']
+
+
+# Produvt Image
+class ProductImage(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="images")
+    # upload_to is relativ to the MEDIA_ROOT, the final upload path: 05_Django_Mosh/media/store/images
+    # here you need pip install pillow -> a python package for processing the images, the django uses pillow for default
+    # validation but I want to validate the upload image file size.
+    image = models.ImageField(upload_to="store/images", validators=[simgle_image_size_vsalidator])
+    # if here is FielField, then you cna use FileExtensionValidator(allowed_extensions:["pdf", "doc"])
+
+
 
 
 class Customer(models.Model):
@@ -121,18 +135,18 @@ class Order(models.Model):
 # 1 OrderItem is a just a Product, and here field "product" is a FK, and it points to Product
 # Product 是 1， OrderItem 是 多。
 class OrderItem(models.Model):
-    order = models.ForeignKey(Order, on_delete=models.PROTECT, related_name="orderitems")
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="orderitems")
     # if the referenced Product is attempted to be deleted, then check
     product = models.ForeignKey(Product, on_delete=models.PROTECT, related_name="orderitems")
     quantity = models.PositiveSmallIntegerField()
-    order_item_total_price = models.DecimalField(max_digits=6, decimal_places=2)
-
-    # order_item_total_price need to be calculated before saving into the table
-    def save(self, *args, **kwargs):
-        # if the passed "order_item_total_price" has null value
-        if not self.order_item_total_price:
-            self.order_item_total_price = self.product.unit_price * self.quantity
-        super().save(*args, **kwargs)
+    # order_item_total_price = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
+    #
+    # # order_item_total_price need to be calculated before saving into the table
+    # def save(self, *args, **kwargs):
+    #     # if the passed "order_item_total_price" has null value
+    #     if not self.order_item_total_price:
+    #         self.order_item_total_price = self.product.unit_price * self.quantity
+    #     super().save(*args, **kwargs)
 
 
 class Address(models.Model):
@@ -146,6 +160,7 @@ class Cart(models.Model):
     # I don't want the hacker to know about my id, so I need to use GUID and redefine the PK
     id = models.UUIDField(primary_key=True, default=uuid4)
     created_at = models.DateTimeField(auto_now_add=True)
+    customer = models.ForeignKey(Customer, on_delete=models.PROTECT)
 
 
 

@@ -7,13 +7,16 @@ from rest_framework.decorators import api_view  # decorators
 from rest_framework.response import Response # this is response from rest framework, not from "django", 比 django的更加强大。
 from rest_framework import status  # status.HTTP_404_NOT_FOUND 等价于 404,  return Response(status=status.HTTP_404_NOT_FOUND)
 # 当前文件下的 models.py import a class
-from .models import Product, Collection, OrderItem, Review, Cart, CartItem, Order, OrderItem, Customer
+from .models import Product, Collection, OrderItem, Review, Cart, CartItem, Order, OrderItem, Customer, ProductImage
 from .serializers import (ProductModelSerializer, CollectionModelSerializer,
                           ReviewModelSerializer, CartModelSerializer,
                           CartItemModelSerializer, CreateCartItemModelSerializer,
                           UpdateCartItemModelSerializer,
                           CustomerModalSerializer, PutCustomerModalSerializer,
-                          OrderModalSerializer, OrderItemModalSerializer)
+                          OrderModalSerializer, OrderItemModalSerializer,
+                          CreateOrderNormalSerializer, UpdateOrderModalSerializer,
+                          ProductImageModelSerializer)
+
 
 # here self defined Permission
 from .permissions import IsAdminOrReadOnly
@@ -58,7 +61,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser, D
 # 这个更牛逼，combine "ProductList" and "ProductDetail", "GET", "POST", "PUT", "DELETE" 都结合在一起了。
 # ModelViewSet contains all minxins and APIView
 class ProductViewSet(ModelViewSet):
-    queryset = Product.objects.all()
+    queryset = Product.objects.prefetch_related("images").all()
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     # 这里的filter的意思是，根据filter， 列出list
     # filterset_fields = ["collection_id"]
@@ -127,21 +130,35 @@ class ReviewViewSet(ModelViewSet):
 
 
 # >>> I don't want to use "ModelViewSet", "ModelViewSet" 有太多功能(我不想用"UpdateModelMixin" 和 “ListModelMixin”)
-class MyBaseCartModelSet(RetrieveModelMixin, CreateModelMixin, DestroyModelMixin, GenericViewSet):
+class MyBaseCartModelSet(ListModelMixin, RetrieveModelMixin, CreateModelMixin, DestroyModelMixin, GenericViewSet):
     pass
 
 
 # >>> CartViewSet -> handle "GET", "POST", "PUT", "PATCH", "DELETE"
-# here be attention, we don't want to support "list all carts", and there is no "update a cart operation"
+# here be attention, we don't want to support "list all carts"(only admin can do it), and there is no "update a cart operation"
 # GET : http://127.0.0.1:8000/store/carts/d0c9caf5714e4c1ea3ee65363a160672/  支持
 # GET : http://127.0.0.1:8000/store/carts/  不应该支持
 class CartViewSet(MyBaseCartModelSet):
+    # only the admin has permisson  to view all the carts, the customer can only view his own carts
+    # first permission only authenticated user can view
+    permission_classes = [IsAuthenticated]
+
+
     # queryset
     def get_queryset(self):
         # prefetch_related: use it when a cart man have multiple items(related_names一方), use "prefetch_related"
         # select_related: for foreignkeys/one2one where we have a single related object, use "select_related"
         # the "items" is related_name
-        return Cart.objects.prefetch_related("items__product").all()  # '__product' means we also wat to preload the "product" in "items"
+        # get user
+        user = self.request.user
+
+        # if the user is staffed(内部员工), then he can see all the carts
+        if user.is_staff:
+            return Cart.objects.prefetch_related("items__product").all()
+
+        # get customer_id according to user
+        c_id = Customer.objects.only("id").get(user_id=user.id)
+        return Cart.objects.prefetch_related("items__product").filter(customer_id=c_id)  # '__product' means we also wat to preload the "product" in "items"
     # serilizer class
     serializer_class = CartModelSerializer
     # pass context
@@ -232,7 +249,7 @@ class CustomerViewSet(BaseCustomerViewSet):
         # if user does not even exist, then the request.user = AnonymousUser
         if not request.user.id:
             return Response("you need to login first, and send me request with your access-token", status=status.HTTP_401_UNAUTHORIZED)
-        (customer, created) = Customer.objects.get_or_create(user_id=request.user.id)
+        customer = Customer.objects.get(user_id=request.user.id)
         if request.method == "GET":
             # create slizer based on the Database instance
             sLizer = CustomerModalSerializer(customer)
@@ -257,8 +274,30 @@ class CustomerViewSet(BaseCustomerViewSet):
 # UPDATE -> update a Order
 # DELETE -> delete a Order
 class OrderViewSet(ModelViewSet):
+
+    http_method_names = ["options", "head", "get", "post", "patch", "delete"]
     # only authenticated user can view
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
+
+    # rewrite teh permissions concering request methods
+    def get_permissions(self):
+        if self.request.method in ["PATCH", "DELETE"]:
+            return [IsAdminUser()] # only admin can do this(与现实不符)
+        return [IsAuthenticated()]
+
+    # to change the default response from CreateModelMixin, we overwrite the create() method
+    def create(self, request, *args, **kwargs):
+        # create dSlizer
+        dSlizer = CreateOrderNormalSerializer(data=request.data, context={"user_id": self.request.user.id})
+        # validate
+        dSlizer.is_valid(raise_exception=True)
+        # save to db, this will call save() in "CreateOrderNormalSerializer" and "save()" will give new created order back
+        order:Order = dSlizer.save()
+        # create new Slizer for responing data
+        sLizer = OrderModalSerializer(order)
+        # response
+        return Response(sLizer.data)
+
 
     # authenticated user can only view his/her own Order
     def get_queryset(self):
@@ -267,15 +306,30 @@ class OrderViewSet(ModelViewSet):
             return Order.objects.select_related("customer").all()
         # first, get customer id
         # BAD! this violates "command or query principle"
-        c_id = Customer.objects.only("id").get_or_create(user_id=self.request.user.id)
-        return Order.objects.select_related("customer").filter(customer_id=c_id)
+        customer = Customer.objects.get(user_id=self.request.user.id)
+        return Order.objects.select_related("customer").filter(customer_id=customer.id)
 
     # sLizer class
-    serializer_class = OrderModalSerializer
+    """
+    get-list:  self.action == 'list'
+    post-list: self.action == 'create':
+    get-detail: self.action == 'retrieve':
+    put-datail: self.action == 'update':
+    patch-detail: self.action == 'partial_update':
+    delete-datail: kein
+    """
+    def get_serializer_class(self):
+        if self.action == "create":
+            return CreateOrderNormalSerializer
+        elif self.action == "partial_update":
+            return UpdateOrderModalSerializer
+        return OrderModalSerializer
+
     # pass context to sLizer
     def get_serializer_context(self):
         return {
-            "request": self.request
+            "request": self.request,
+            # "user_id": self.request.user.id
         }
     # nested actions
 
@@ -291,3 +345,19 @@ class OrderItemViewSet(ModelViewSet):
             "request": self.request
         }
     # nested actions
+
+
+
+# here we sue the nested router:  products/1(product_pk)/images/1(pk)
+class ProductImageViewSet(ModelViewSet):
+    def get_queryset(self):
+        return ProductImage.objects.filter(product_id=self.kwargs.get("product_pk"))
+
+    serializer_class = ProductImageModelSerializer
+
+    # we need to pass the product_id to the serializer via context
+    def get_serializer_context(self):
+        return {
+            "request": self.request,
+            "product_id": self.kwargs.get("product_pk")
+        }

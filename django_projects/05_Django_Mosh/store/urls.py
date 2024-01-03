@@ -32,6 +32,7 @@ carts_router = routers.NestedDefaultRouter(router, "carts", lookup="cart") # "ca
 # register child, basename 讲解见上面
 products_router.register("reviews", views.ReviewViewSet, basename="product-reviews")
 carts_router.register("items", views.CartItemViewSet, basename="carts-items") #the drf will create for us 2 route based on the basename: "carts-items-datail", "carts-items-list"
+products_router.register("images", views.ProductImageViewSet, basename="product-images")
 
 
 

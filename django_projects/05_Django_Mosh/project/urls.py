@@ -32,6 +32,16 @@ http://127.0.0.1:8000/store/products/?collection_id=4&unit_price__lt=100&unit_pr
 http://127.0.0.1:8000/store/products/?search=Coffee&ordering=-unit_price&last_update
 
 
+>> reviews(nested routers)
+http://127.0.0.1:8000/store/products/1/reviews/1/
+
+
+>> carts(nested routers)
+http://127.0.0.1:8000/store/carts/8ed87fcf-b554-4825-86b0-82730ecb5227/items/1/
+
+
+
+
 >>user(create/update)
 "http://127.0.0.1:8001/auth/users/"
 
@@ -43,6 +53,18 @@ http://127.0.0.1:8000/auth/jwt/create
 
 >> after successfully logined in, you want to retrieve the profile(in the header add the JWT header, 注意JWT 之后又一个空格)
 http://127.0.0.1:8000/auth/users/me/    with header {"Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzAzMTU2MjQwLCJpYXQiOjE3MDMwNjk4NDAsImp0aSI6IjNkMzBiZmI1YTE5ZDRmNWQ4NzhhNGE1Y2UwYzVmMWQxIiwidXNlcl9pZCI6MX0.VyVLGg_jriYRdHw6y3q7c-L-Bh7p_aqUOOnhRgukThY"}
+
+
+>> all Orders
+http://127.0.0.1:8000/store/orders/"
+
+>> all order items
+http://127.0.0.1:8000/store/order-items/
+
+>> create an Order, pass a cart_uuid to "http://127.0.0.1:8000/store/orders/", and map the cart_items to order_items, at the end, delete the cart when transaction is success
+get cart_uuid: http://127.0.0.1:8000/store/carts/
+create an order: http://127.0.0.1:8000/store/orders/
+
 
 
 
@@ -71,6 +93,10 @@ from django.contrib import admin
 from django.urls import path, include
 import debug_toolbar
 
+# image upload
+from django.conf import settings
+from django.conf.urls.static import static
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('playground/', include('playground.urls')),
@@ -84,7 +110,15 @@ urlpatterns = [
     path('__debug__/', include(debug_toolbar.urls)),
 ]
 
-"""
+
+# only for developing process
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+
+
+
+""" 
 访问：http://127.0.0.1:8000/auth/
 
 path('auth/', include('djoser.urls')),

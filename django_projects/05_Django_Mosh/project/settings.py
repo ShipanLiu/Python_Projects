@@ -12,9 +12,14 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 from datetime import timedelta
+import os
+
+from project import secrets
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+print(BASE_DIR) # /Volumes/D/Z_Frond_Back_workplace/07_Python/django_projects/05_Django_Mosh
 
 
 # Quick-start development settings - unsuitable for production
@@ -91,7 +96,6 @@ WSGI_APPLICATION = 'project.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-from . import secrets
 SSL_DIR = BASE_DIR / 'project' / 'mysql_ssl'
 ca_path = SSL_DIR / 'ca.pem'
 cert_path = SSL_DIR / 'client-cert.pem'
@@ -149,7 +153,17 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+
+# this is the endpoints where the user use to upload media
+MEDIA_URL = "/media/"
+
+# also tell django where the media files should be stored
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
+print(MEDIA_ROOT) #/Volumes/D/Z_Frond_Back_workplace/07_Python/django_projects/05_Django_Mosh/media
+
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
