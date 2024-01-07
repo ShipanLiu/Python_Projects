@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'djoser',
     'django_filters',
+    "corsheaders", # from django-cors-headers, to allows your resources to be accessed on other domains
 
     # my apps
     'playground',
@@ -60,6 +61,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware", # CorsMiddleware should be placed as high as possible[from ]
     'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -209,3 +211,22 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('JWT',),
     "ACCESS_TOKEN_LIFETIME": timedelta(days=300),
 }
+
+INTERNAL_IPS = [
+    "127.0.0.1"
+]
+
+
+# setups for CORS:
+# A list of origins that are authorized to make cross-site HTTP requests
+CORS_ALLOWED_ORIGINS = [
+#     "https://example.com",
+#     "https://sub.example.com",
+#     "http://localhost:8080",
+#     "http://127.0.0.1:8080",
+    "http://127.0.0.1",
+    "http://localhost",
+]
+
+# A list of strings representing regexes that match Origins that are authorized to make cross-site HTTP requests.
+# CORS_ALLOWED_ORIGIN_REGEXES = []

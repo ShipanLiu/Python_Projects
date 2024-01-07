@@ -61,6 +61,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser, D
 # 这个更牛逼，combine "ProductList" and "ProductDetail", "GET", "POST", "PUT", "DELETE" 都结合在一起了。
 # ModelViewSet contains all minxins and APIView
 class ProductViewSet(ModelViewSet):
+    # because we need to fetch all the images for projects
     queryset = Product.objects.prefetch_related("images").all()
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     # 这里的filter的意思是，根据filter， 列出list
